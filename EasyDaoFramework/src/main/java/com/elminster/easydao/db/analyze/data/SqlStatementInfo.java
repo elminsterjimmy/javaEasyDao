@@ -1,9 +1,13 @@
 package com.elminster.easydao.db.analyze.data;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
+import com.elminster.common.util.CollectionUtil;
 import com.elminster.common.util.ObjectUtil;
+import com.elminster.easydao.db.id.IdGenerator;
+import com.elminster.easydao.db.mapping.MappingPolicy;
 
 /**
  * The information class about the sql statement.
@@ -41,8 +45,30 @@ public class SqlStatementInfo implements Serializable {
   private boolean callable;
   /** Analyzed SQL Statement's scroll mode  */
   private ScrollMode scrollMode;
+  /** the id generator. */
+  private IdGenerator idGenerator;
+  /** has mapping to other table? */
+  private boolean mapping;
+  /** the mapping policy. */
+  private MappingPolicy mappingPolicy;
+  /** the mapping sql statement info. */
+  private List<MappingSqlStatementInfo> mappingSqlStatementInfo;
   
   public SqlStatementInfo() {
+  }
+
+  /**
+   * @return the mapping
+   */
+  public boolean isMapping() {
+    return mapping;
+  }
+
+  /**
+   * @param mapping the mapping to set
+   */
+  public void setMapping(boolean mapping) {
+    this.mapping = mapping;
   }
 
   /**
@@ -73,6 +99,18 @@ public class SqlStatementInfo implements Serializable {
    */
   public void setAnalyzedSqlParameters(List<Object> analyzedSqlParameters) {
     this.analyzedSqlParameters = analyzedSqlParameters;
+  }
+  
+  /**
+   * @param analyzedSqlParameters
+   *          the analyzedSqlParameters to set
+   */
+  public void setAnalyzedSqlParameters(Serializable[]... analyzedSqlParameters) {
+    List<Object> list = new ArrayList<Object>();
+    for (int i = 0; i < analyzedSqlParameters.length; i++) {
+      list.addAll(CollectionUtil.array2List(analyzedSqlParameters[i]));
+    }
+    this.analyzedSqlParameters = list;
   }
 
   /**
@@ -146,7 +184,54 @@ public class SqlStatementInfo implements Serializable {
   public void setScrollMode(ScrollMode scrollMode) {
     this.scrollMode = scrollMode;
   }
+  
+  /**
+   * @return the idGenerator
+   */
+  public IdGenerator getIdGenerator() {
+    return idGenerator;
+  }
 
+  /**
+   * @param idGenerator the idGenerator to set
+   */
+  public void setIdGenerator(IdGenerator idGenerator) {
+    this.idGenerator = idGenerator;
+  }
+
+  /**
+   * @return the mappingPolicy
+   */
+  public MappingPolicy getMappingPolicy() {
+    return mappingPolicy;
+  }
+
+  /**
+   * @param mappingPolicy the mappingPolicy to set
+   */
+  public void setMappingPolicy(MappingPolicy mappingPolicy) {
+    this.mappingPolicy = mappingPolicy;
+  }
+
+  /**
+   * @return the mappingSqlStatementInfo
+   */
+  public List<MappingSqlStatementInfo> getMappingSqlStatementInfo() {
+    return mappingSqlStatementInfo;
+  }
+
+  /**
+   * @param mappingSqlStatementInfo the mappingSqlStatementInfo to set
+   */
+  public void setMappingSqlStatementInfo(
+      List<MappingSqlStatementInfo> mappingSqlStatementInfo) {
+    this.mappingSqlStatementInfo = mappingSqlStatementInfo;
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
   public String toString() {
     return ObjectUtil.buildToStringByReflect(this);
   }

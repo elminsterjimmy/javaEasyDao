@@ -27,16 +27,28 @@ public class MySQLDialect extends Dialect {
     return true;
   }
 
+  @Override
   public int registerResultSetOutParameter(CallableStatement statement, int col)
       throws SQLException {
     return col;
   }
 
+  @Override
   public ResultSet getResultSet(CallableStatement ps) throws SQLException {
     boolean isResultSet = ps.execute();
     while (!isResultSet && ps.getUpdateCount() != -1) {
       isResultSet = ps.getMoreResults();
     }
     return ps.getResultSet();
+  }
+
+  @Override
+  public String getCurrentTimestampSelectString() {
+    return "select now()";
+  }
+
+  @Override
+  public String getIdentitySelectString() {
+    return "select last_insert_id()";
   }
 }

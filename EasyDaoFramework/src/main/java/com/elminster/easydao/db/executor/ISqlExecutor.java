@@ -1,11 +1,12 @@
 package com.elminster.easydao.db.executor;
 
-import java.lang.reflect.Method;
-
 import com.elminster.easydao.db.analyze.data.SqlStatementInfo;
-import com.elminster.easydao.db.exception.SQLExecuteException;
+import com.elminster.easydao.db.handler.IResultSetHandler;
 
 public interface ISqlExecutor {
 
-	public Object execute(SqlStatementInfo sqlStatementInfo, Method invokeMethod, Object[] args) throws SQLExecuteException;
+	public Object executeQuery(SqlStatementInfo sqlStatementInfo,
+      IResultSetHandler resultHandler) throws ExecuteException;
+	
+	public int executeUpdate(SqlStatementInfo sqlStatementInfo) throws ExecuteException;
 }

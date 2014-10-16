@@ -3,11 +3,16 @@ package com.elminster.easydao.db.analyze;
 import java.lang.reflect.Field;
 
 import com.elminster.common.util.ReflectUtil;
+import com.elminster.easydao.db.analyze.data.MappingSqlStatementInfo;
 import com.elminster.easydao.db.analyze.data.SqlStatementInfo.SqlType;
+import com.elminster.easydao.db.annotation.Mapping;
 import com.elminster.easydao.db.annotation.util.AnnotationUtil;
 import com.elminster.easydao.db.constants.SqlConstants;
-import com.elminster.easydao.db.exception.SqlAnalyzeException;
 import com.elminster.easydao.db.manager.DAOSupportSession;
+import com.elminster.easydao.db.mapping.IMappingProcessor;
+import com.elminster.easydao.db.mapping.MappingException;
+import com.elminster.easydao.db.mapping.MappingPolicy;
+import com.elminster.easydao.db.mapping.ORMType;
 
 public class ORMFetchAnalyzer extends ORMSqlAnalyzer {
 
@@ -21,7 +26,7 @@ public class ORMFetchAnalyzer extends ORMSqlAnalyzer {
   }
 
   @Override
-  protected void mapping(Object obj) {
+  protected void mapping(Object obj) throws AnalyzeException {
     StringBuilder builder = new StringBuilder();
     StringBuilder whereClause = new StringBuilder();
 
@@ -37,7 +42,7 @@ public class ORMFetchAnalyzer extends ORMSqlAnalyzer {
         } else {
           builder.append(", ");
         }
-        String columnName = getColumnName(field, getColumnConverter(obj));
+        String columnName = AnnotationUtil.getColumnName(field, AnnotationUtil.getColumnConverter(obj));
         builder.append(columnName);
 
         Object value = null;
@@ -45,9 +50,9 @@ public class ORMFetchAnalyzer extends ORMSqlAnalyzer {
           value = ReflectUtil.getFieldValue(obj, field);
           value = AnnotationUtil.getCustomerDBValue(field, value);
         } catch (IllegalArgumentException e) {
-          throw new SqlAnalyzeException(e);
+          throw new AnalyzeException(e);
         } catch (IllegalAccessException e) {
-          throw new SqlAnalyzeException(e);
+          throw new AnalyzeException(e);
         }
         if (null != value) {
           if (firstValue) {
@@ -75,11 +80,29 @@ public class ORMFetchAnalyzer extends ORMSqlAnalyzer {
           }
           analyzedSqlParameters.add(value);
         }
+      } else if (AnnotationUtil.isMapping(field)) {
+        this.mapping = true;
+        Mapping mapping = field.getAnnotation(Mapping.class);
+        MappingPolicy mappingPolicy = mapping.mappingPolicy();
+        this.mappingPolicy = mappingPolicy;
+        IMappingProcessor mappingProcessor = this.mappingProcessorFactory.getMappingProcessor(
+            mapping.mappingPolicy(), this.getORMType());
+        try {
+          MappingSqlStatementInfo mappingSqlStatementInfo = mappingProcessor.processMapping(session, field, obj);
+          this.addMappingSqlStatementInfo(mappingSqlStatementInfo);
+        } catch (MappingException e) {
+          throw new AnalyzeException("cannot mapping bacause:" +  e);
+        }
       }
     }
     builder.append(" FROM ");
-    builder.append(getTableName(obj));
+    builder.append(AnnotationUtil.getTableName(obj));
     builder.append(whereClause.toString());
     analyzedSql = builder.toString();
+  }
+
+  @Override
+  protected ORMType getORMType() {
+    return ORMType.ORM_FETCH;
   }
 }

@@ -11,8 +11,6 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.mail.internet.ParseException;
-
 import com.elminster.common.constants.Constants.CharacterConstants;
 import com.elminster.common.constants.Constants.StringConstants;
 import com.elminster.common.constants.RegexConstants;
@@ -20,11 +18,11 @@ import com.elminster.common.util.CloseUtil;
 import com.elminster.common.util.ReflectUtil;
 import com.elminster.common.util.StringUtil;
 import com.elminster.easydao.db.analyze.expression.evaluate.Engine;
+import com.elminster.easydao.db.analyze.expression.exception.ParserException;
 import com.elminster.easydao.db.annotation.Sql;
 import com.elminster.easydao.db.annotation.SqlFile;
 import com.elminster.easydao.db.annotation.SqlParam;
 import com.elminster.easydao.db.annotation.util.AnnotationUtil;
-import com.elminster.easydao.db.exception.SqlAnalyzeException;
 import com.elminster.easydao.db.manager.DAOSupportSession;
 
 /**
@@ -36,8 +34,6 @@ import com.elminster.easydao.db.manager.DAOSupportSession;
  */
 public class DefaultSqlAnalyzer extends BaseSqlAnalyzer implements ISqlAnalyzer {
 
-  private static final char SPACE = CharacterConstants.SPACE;
-  private static final char COMMA = CharacterConstants.COMMA;
   private static final char DOT = CharacterConstants.DOT;
   private static final String SQL_REPLACEMENT = StringConstants.QUESTION;
   private static final String PARAM_KEY = StringConstants.DOLLAR;
@@ -60,7 +56,7 @@ public class DefaultSqlAnalyzer extends BaseSqlAnalyzer implements ISqlAnalyzer 
    *          the method's argument(s)
    * @throws Exception 
    */
-  public void analyzeSql(Method invokedMethod, Object... methodArguments) throws Exception {
+  public void analyzeSql(Method invokedMethod, Object... methodArguments) throws AnalyzeException {
     String originalSql = getOriginalSql(invokedMethod);
     // get all SqlParam annotation(s)
     Annotation[][] parametersAnnos = invokedMethod.getParameterAnnotations();
@@ -84,7 +80,7 @@ public class DefaultSqlAnalyzer extends BaseSqlAnalyzer implements ISqlAnalyzer 
       StringBuilder builder = new StringBuilder();
       for (int i = idx + PARAM_KEY.length(); i < analyzedSql.length(); i++) {
         char ch = analyzedSql.charAt(i);
-        if (SPACE == ch || COMMA == ch || CharacterConstants.LF == ch || CharacterConstants.CR == ch) {
+        if (invalidChar(ch)) {
           break;
         } else {
           if (DOT == ch) {
@@ -97,18 +93,18 @@ public class DefaultSqlAnalyzer extends BaseSqlAnalyzer implements ISqlAnalyzer 
       if (isSimpleData) {
         Object replaceValue = paramAnnoMap.get(replaceKey);
         if (null == replaceValue) {
-          throw new SqlAnalyzeException(
+          throw new AnalyzeException(
               "SqlParam Annotation's value and argurment are NOT matched.");
         }
         analyzedSqlParameters.add(replaceValue);
       } else {
         String[] splited = replaceKey.split(RegexConstants.REGEX_DOT);
         if (2 != splited.length) {
-          throw new SqlAnalyzeException("");
+          throw new AnalyzeException("");
         }
         Object obj = paramAnnoMap.get(splited[0]);
         if (null == obj) {
-          throw new SqlAnalyzeException(
+          throw new AnalyzeException(
               "SqlParam Annotation's value and argurment are NOT matched.");
         }
         try {
@@ -117,14 +113,24 @@ public class DefaultSqlAnalyzer extends BaseSqlAnalyzer implements ISqlAnalyzer 
           fieldValue = AnnotationUtil.getCustomerDBValue(field, fieldValue);
           analyzedSqlParameters.add(fieldValue);
         } catch (IllegalArgumentException e) {
-          throw new SqlAnalyzeException(e);
+          throw new AnalyzeException(e);
         } catch (IllegalAccessException e) {
-          throw new SqlAnalyzeException(e);
+          throw new AnalyzeException(e);
         }
       }
       analyzedSql = analyzedSql.replaceFirst(PARAM_KEY_REGEX + replaceKey,
           SQL_REPLACEMENT);
     }
+  }
+
+  /**
+   * Only alphabetic, digit, ".", "_", "-" is valid.
+   * @param ch the character
+   * @return is invalid
+   */
+  private boolean invalidChar(char ch) {
+    return !(Character.isAlphabetic(ch) || Character.isDigit(ch) || DOT == ch || 
+        CharacterConstants.UNDER_LINE == ch || CharacterConstants.HYPHEN == ch);
   }
 
   /**
@@ -134,10 +140,15 @@ public class DefaultSqlAnalyzer extends BaseSqlAnalyzer implements ISqlAnalyzer 
    * @return analyzed SQL statement
    * @throws ParseException 
    */
-  private String analyzeOriginalSql(String originalSql, Map<String, Object> parameterMap) throws ParseException {
+  private String analyzeOriginalSql(String originalSql, Map<String, Object> parameterMap) throws AnalyzeException {
     Engine engine = new Engine();
     engine.addVariables(parameterMap);
-    Object rst = engine.execute(originalSql);
+    Object rst = null;
+    try {
+      rst = engine.execute(originalSql);
+    } catch (ParserException e) {
+      throw new AnalyzeException(e);
+    }
     return (String) rst;
   }
 
@@ -148,13 +159,13 @@ public class DefaultSqlAnalyzer extends BaseSqlAnalyzer implements ISqlAnalyzer 
    *          the method which original SQL statement is invoked
    * @return the original SQL statement which to analyze
    */
-  private String getOriginalSql(Method method) {
+  private String getOriginalSql(Method method) throws AnalyzeException {
     String originalSql = null;
     // Get SQL from SQL annotation
     Sql sqlAnno = method.getAnnotation(Sql.class);
     SqlFile sqlFileAnno = method.getAnnotation(SqlFile.class);
     if (null == sqlAnno && null == sqlFileAnno) {
-      throw new SqlAnalyzeException("SQL statement or SQL file is missing.");
+      throw new AnalyzeException("SQL statement or SQL file is missing.");
     } else {
       String annoValue = null == sqlAnno ? null : sqlAnno.value();
       String annoFile = null == sqlFileAnno ? null : sqlFileAnno.value();
@@ -163,7 +174,7 @@ public class DefaultSqlAnalyzer extends BaseSqlAnalyzer implements ISqlAnalyzer 
       } else if (!StringUtil.isEmpty(annoFile)) {
         originalSql = loadSqlFile(annoFile);
       } else {
-        throw new SqlAnalyzeException("SQL statement or SQL file is missing.");
+        throw new AnalyzeException("SQL statement or SQL file is missing.");
       }
     }
     return originalSql;
@@ -176,7 +187,7 @@ public class DefaultSqlAnalyzer extends BaseSqlAnalyzer implements ISqlAnalyzer 
    *          specified SQL file
    * @return SQL statement
    */
-  private String loadSqlFile(String fileName) {
+  private String loadSqlFile(String fileName) throws AnalyzeException {
     InputStreamReader isReader = null;
     InputStream is = null;
     BufferedReader bReader = null;
@@ -191,9 +202,9 @@ public class DefaultSqlAnalyzer extends BaseSqlAnalyzer implements ISqlAnalyzer 
         sb.append(StringUtil.newline());
       }
     } catch (FileNotFoundException fnfe) {
-      throw new SqlAnalyzeException("SQL file is not found.");
+      throw new AnalyzeException("SQL file is not found.");
     } catch (IOException ioe) {
-      throw new SqlAnalyzeException("SQL file read error.");
+      throw new AnalyzeException("SQL file read error.");
     } finally {
       CloseUtil.closeReaderQuiet(bReader);
       CloseUtil.closeReaderQuiet(isReader);

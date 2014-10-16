@@ -19,7 +19,7 @@ public interface ISqlAnalyzer {
 	 * @param methodArguments the method's argument(s)
 	 * @return SqlStatementInfo SQL statement information
 	 */
-	public SqlStatementInfo parser(Method invokedMethod, Object... methodArguments) throws Exception;
+	public SqlStatementInfo parser(Method invokedMethod, Object... methodArguments) throws AnalyzeException;
 	
 	/**
 	 * Get original DAO interface

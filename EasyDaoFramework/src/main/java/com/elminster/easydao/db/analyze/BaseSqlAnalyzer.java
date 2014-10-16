@@ -4,20 +4,27 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.elminster.easydao.db.analyze.data.MappingSqlStatementInfo;
 import com.elminster.easydao.db.analyze.data.PagedData;
 import com.elminster.easydao.db.analyze.data.SqlStatementInfo;
 import com.elminster.easydao.db.analyze.data.SqlStatementInfo.SqlType;
 import com.elminster.easydao.db.constants.SqlConstants;
 import com.elminster.easydao.db.dialect.Dialect;
 import com.elminster.easydao.db.dialect.IDialect;
+import com.elminster.easydao.db.id.IdGenerator;
 import com.elminster.easydao.db.manager.DAOSupportSession;
+import com.elminster.easydao.db.mapping.MappingPolicy;
 
 abstract public class BaseSqlAnalyzer implements ISqlAnalyzer {
 
   protected Class<?> originalClass;
   protected String analyzedSql;
   protected List<Object> analyzedSqlParameters = new ArrayList<Object>();
+  protected boolean mapping;
+  protected MappingPolicy mappingPolicy;
+  protected List<MappingSqlStatementInfo> mappingStatementInfo;
   protected DAOSupportSession session;
+  protected IdGenerator idGenerator;
 
   public BaseSqlAnalyzer(DAOSupportSession session) {
     this.session = session;
@@ -35,16 +42,18 @@ abstract public class BaseSqlAnalyzer implements ISqlAnalyzer {
    * @throws Exception
    */
   public SqlStatementInfo parser(Method invokedMethod,
-      Object... methodArguments) throws Exception {
+      Object... methodArguments) throws AnalyzeException {
 
     boolean usePaged = false;
     PagedData pagedData = null;
 
-    for (Object arg : methodArguments) {
-      if (arg instanceof PagedData) {
-        usePaged = true;
-        pagedData = (PagedData) arg;
-        break;
+    if (null != methodArguments) {
+      for (Object arg : methodArguments) {
+        if (arg instanceof PagedData) {
+          usePaged = true;
+          pagedData = (PagedData) arg;
+          break;
+        }
       }
     }
 
@@ -79,7 +88,18 @@ abstract public class BaseSqlAnalyzer implements ISqlAnalyzer {
     sqlStatementInfo.setAnalyzedSqlType(getSqlType());
     sqlStatementInfo.setUsePaged(usePaged);
     sqlStatementInfo.setPagedData(pagedData);
+    sqlStatementInfo.setMapping(mapping);
+    sqlStatementInfo.setMappingPolicy(mappingPolicy);
+    sqlStatementInfo.setIdGenerator(idGenerator);
+    sqlStatementInfo.setMappingSqlStatementInfo(mappingStatementInfo);
     return sqlStatementInfo;
+  }
+  
+  protected void addMappingSqlStatementInfo(MappingSqlStatementInfo mappingSqlStatInfo) {
+    if (null == this.mappingStatementInfo) {
+      this.mappingStatementInfo = new ArrayList<MappingSqlStatementInfo>();
+    }
+    mappingStatementInfo.add(mappingSqlStatInfo);
   }
 
   /**
@@ -108,7 +128,8 @@ abstract public class BaseSqlAnalyzer implements ISqlAnalyzer {
   }
 
   abstract protected void analyzeSql(Method invokedMethod,
-      Object... methodArguments) throws Exception;
+      Object... methodArguments) throws AnalyzeException;
+  
 
   /**
    * Get SQL statement type.

@@ -53,4 +53,9 @@ public class SQLServerDialect extends Dialect {
     // but you can't do it now or the ResultSet you just got will be closed
     return ps.getResultSet();
   }
+  
+  @Override
+  public String getCurrentTimestampSelectString() {
+    return "select current_timestamp";
+  }
 }

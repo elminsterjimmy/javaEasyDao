@@ -58,7 +58,7 @@ public class ResultSetHelper {
       Field[] fields = ReflectUtil.getAllField(clazz);
       for (int i = 0; i < fields.length; i++) {
         Field field = fields[i];
-        if (isColumn(field)) {
+        if (AnnotationUtil.isColumn(field)) {
           Object value = ResultSetHelper.getValue(rs, getColumnName(field,
               getColumnConverter(clazz)), AnnotationUtil.getDBType(field));
           value = AnnotationUtil.getCustomerBeanValue(field, value);
@@ -75,11 +75,6 @@ public class ResultSetHelper {
       return null;
     }
     return pattern.convertClass();
-  }
-
-  public static boolean isColumn(Field field) {
-    Column column = field.getAnnotation(Column.class);
-    return null != column;
   }
 
   protected static String getColumnName(Field field, String converterClass) {

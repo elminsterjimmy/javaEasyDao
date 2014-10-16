@@ -4,10 +4,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
-import javax.mail.internet.ParseException;
-
 import com.elminster.common.util.CollectionUtil;
 import com.elminster.common.util.ObjectUtil;
+import com.elminster.easydao.db.analyze.expression.exception.ParserException;
 
 public class Engine {
 
@@ -58,7 +57,7 @@ public class Engine {
     evaluater.setVariableValue(variableName, value);
   }
 
-  public Object execute(String expression) throws ParseException {
+  public Object execute(String expression) throws ParserException {
     this.expression = expression;
     this.line = 1;
     this.offset = 0;
@@ -69,19 +68,19 @@ public class Engine {
     return stack.pop();
   }
 
-  public void compile(String expression) throws ParseException {
+  public void compile(String expression) throws ParserException {
     this.expression = expression;
     this.size = expression.length();
     compile(new RootBlock(evaluater));
   }
 
-  public Block compile(Block parent) throws ParseException {
+  public Block compile(Block parent) throws ParserException {
     Block block = createBlock(parent);
     complieBlock(block);
     return block;
   }
 
-  private Block compileStatement(Block block) throws ParseException {
+  private Block compileStatement(Block block) throws ParserException {
     Block b = null;
     skipSpace();
     int index = offset;
@@ -93,12 +92,12 @@ public class Engine {
     return b;
   }
 
-  private void complieBlock(Block parent) throws ParseException {
+  private void complieBlock(Block parent) throws ParserException {
     while (null != compileStatement(parent))
       ;
   }
 
-  private Block compileToken(String key, Block block, int index) throws ParseException {
+  private Block compileToken(String key, Block block, int index) throws ParserException {
     skipSpace();
     Block rst = null;
     if (KEY_IF.equals(key)) {
@@ -122,12 +121,12 @@ public class Engine {
     return commonBlock;
   }
 
-  private Block createIfElseBlock(Block parent) throws ParseException {
+  private Block createIfElseBlock(Block parent) throws ParserException {
     int startLine = line;
     int startIdx = offset;
     // find then
     if (!findKey(KEY_THEN)) {
-      throw new ParseException("Unexpect end of if.");
+      throw new ParserException("Unexpect end of if.");
     }
     // get condition
     String condition = expression.substring(startIdx, offset

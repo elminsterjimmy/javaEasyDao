@@ -6,6 +6,7 @@ import java.math.BigDecimal;
 import java.sql.BatchUpdateException;
 import java.sql.Clob;
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.NClob;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -1186,6 +1187,15 @@ public class Query implements IQuery {
     } else if ("java.math.BigDecimal".equals(dataClassName)) {
       hostVarTypes.abstractType[index] = Types.DECIMAL;
       hostVarTypes.isArray[index] = false;
+    } else if ("[Ljava.sql.Date;".equals(dataClassName)) {
+      hostVarTypes.abstractType[index] = Types.DATE;
+      if (singleDataObject != null) {
+        hostVarTypes.rows = Math.max(hostVarTypes.rows,
+            ((Object[]) singleDataObject).length);
+      }
+    } else if ("java.sql.Date".equals(dataClassName)) {
+      hostVarTypes.abstractType[index] = Types.DATE;
+      hostVarTypes.isArray[index] = false;
     } else {
       throw new SQLException("unsupported type=" + dataClassName);
     }
@@ -1366,6 +1376,22 @@ public class Query implements IQuery {
           pst.setBigDecimal(1 + i, val[Math.min(k, val.length - 1)]);
         } else {
           pst.setBigDecimal(1 + i, (BigDecimal) data[i]);
+        }
+        break;
+      case Types.DATE: // date
+        if (types.isArray[i]) {
+          Date[] val = (Date[]) data[i];
+          if (null == cal) {
+            pst.setDate(1 + i, val[Math.min(k, val.length - 1)]);
+          } else {
+            pst.setDate(1 + i, val[Math.min(k, val.length - 1)], cal);
+          }
+        } else {
+          if (null == cal) {
+            pst.setDate(1 + i, (Date) data[i]);
+          } else {
+            pst.setDate(1 + i, (Date) data[i], cal);
+          }
         }
         break;
       default:

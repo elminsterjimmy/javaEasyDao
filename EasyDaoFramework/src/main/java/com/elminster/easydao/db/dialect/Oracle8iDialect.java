@@ -108,4 +108,9 @@ public class Oracle8iDialect extends Dialect {
     ps.execute();
     return (ResultSet) ps.getObject(1);
   }
+
+  @Override
+  public String getCurrentTimestampSelectString() {
+    return "select sysdate from dual";
+  }
 }

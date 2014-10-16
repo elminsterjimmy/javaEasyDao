@@ -1,8 +1,9 @@
 package com.elminster.easydao.db.handler;
 
 import java.lang.reflect.Method;
-import java.lang.reflect.ParameterizedType;
-import java.util.List;
+import java.util.Collection;
+
+import com.elminster.common.util.ReflectUtil;
 
 public class ResultSetHandlerFactory {
 
@@ -14,22 +15,35 @@ public class ResultSetHandlerFactory {
 		return instance;
 	}
 	
-	public IResultSetHandler getResultSetHandler(Method invokeMethod) throws Exception {
+	public IResultSetHandler getResultSetHandler(Method invokeMethod, Class<?> originalClass) throws HandleException {
 		Class<?> returnClazz = invokeMethod.getReturnType();
-		IResultSetHandler resultSetHandler = null;
-		if (null == returnClazz) {
-			return null;
-		} else if (List.class.isAssignableFrom(returnClazz)) {
-			// List
-			ParameterizedType pt = (ParameterizedType) invokeMethod.getGenericReturnType();
-			String className = pt.getActualTypeArguments()[0].toString().split(" ")[1];
-			Class<?> clazz = Class.forName(className);
-			resultSetHandler = new ListResultSetHandler(clazz);
-		} else if (returnClazz.isArray()) {
-			// Array
-		} else {
-			resultSetHandler = new ObjectResultSetHandler(returnClazz);
-		}
-		return resultSetHandler;
+		Class<?>[] genericType;
+    try {
+      genericType = ReflectUtil.getGenericReturnType(invokeMethod);
+      if (null == genericType) {
+        if (null != originalClass.getGenericInterfaces()) {
+          genericType = ReflectUtil.getGenericType(originalClass.getGenericInterfaces()[0]);
+        }
+      }
+      return getResultSetHandler(returnClazz, genericType);
+    } catch (ClassNotFoundException e) {
+      throw new HandleException(e);
+    }
 	}
+	
+	public IResultSetHandler getResultSetHandler(Class<?> resultClass, Class<?>[] genericTypes) throws HandleException {
+    IResultSetHandler resultSetHandler = null;
+    if (null == resultClass) {
+      return null;
+    } else if (Collection.class.isAssignableFrom(resultClass)) {
+      // List
+      resultSetHandler = new CollectionResultSetHandler(genericTypes[0], resultClass);
+    } else if (resultClass.isArray()) {
+      // Array
+      Class<?> arrayType = resultClass.getComponentType();
+    } else {
+      resultSetHandler = new ObjectResultSetHandler(resultClass);
+    }
+    return resultSetHandler;
+  }
 }

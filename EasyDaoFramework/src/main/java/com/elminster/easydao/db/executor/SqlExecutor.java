@@ -1,6 +1,5 @@
 package com.elminster.easydao.db.executor;
 
-import java.lang.reflect.Method;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ParameterMetaData;
@@ -17,90 +16,64 @@ import com.elminster.common.util.JDBCUtil;
 import com.elminster.easydao.db.analyze.data.PagedData;
 import com.elminster.easydao.db.analyze.data.ScrollMode;
 import com.elminster.easydao.db.analyze.data.SqlStatementInfo;
-import com.elminster.easydao.db.analyze.data.SqlStatementInfo.SqlType;
 import com.elminster.easydao.db.dialect.IDialect;
-import com.elminster.easydao.db.exception.SQLExecuteException;
-import com.elminster.easydao.db.exception.SqlAnalyzeException;
 import com.elminster.easydao.db.handler.IResultSetHandler;
-import com.elminster.easydao.db.handler.ResultSetHandlerFactory;
 import com.elminster.easydao.db.manager.DAOSupportSession;
+import com.elminster.easydao.db.mapping.IMappingExecutor;
+import com.elminster.easydao.db.mapping.MappingExecutorFactory;
 
 public class SqlExecutor implements ISqlExecutor {
 
   private static final Log logger = LogFactory.getLog(SqlExecutor.class);
 
-  private Connection conn;
-  private ResultSetHandlerFactory resultSetHandlerFactory = ResultSetHandlerFactory.getInstance();
+  private MappingExecutorFactory mappingExecutorFactory = MappingExecutorFactory
+      .getInstance();
   private DAOSupportSession session;
-  
+
   public SqlExecutor(DAOSupportSession session) {
     this.session = session;
   }
-  
-  public Object execute(SqlStatementInfo sqlStatementInfo, Method invokeMethod,
-      Object[] args) throws SQLExecuteException {
-    this.conn = getConnection(invokeMethod, args);
-    Object rst = null;
-    SqlType sqlType = sqlStatementInfo.getAnalyzedSqlType();
-    if (SqlType.UPDATE == sqlType) {
-      rst = executeUpdate(sqlStatementInfo, invokeMethod);
-    } else if (SqlType.QUERY == sqlType) {
-      rst = executeQuery(sqlStatementInfo, invokeMethod);
-    } else if (SqlType.STORED_PROCEDURE == sqlType) {
 
-    }
-
-    return rst;
-  }
-
-  private Connection getConnection(Method invokeMethod, Object[] args) {
-    for (Object arg : args) {
-      if (arg instanceof Connection) {
-        return (Connection) arg;
-      }
-    }
-    return session.getConnection();
-  }
-
-  private Object executeQuery(SqlStatementInfo sqlStatementInfo,
-      Method invokeMethod) {
+  @Override
+  public Object executeQuery(SqlStatementInfo sqlStatementInfo,
+      IResultSetHandler resultHandler) throws ExecuteException {
 
     PreparedStatement pstmt = null;
     ResultSet rs = null;
-    IResultSetHandler resultSetHandler = null;
     try {
       pstmt = createPreparedStatement(sqlStatementInfo);
       rs = getResultSet(pstmt, sqlStatementInfo);
 
-      resultSetHandler = resultSetHandlerFactory
-          .getResultSetHandler(invokeMethod);
-      return resultSetHandler.handleResultSet(rs);
+      Object obj = resultHandler.handleResultSet(rs);
+
+      if (sqlStatementInfo.isMapping()) {
+        IMappingExecutor mappingExecutor = mappingExecutorFactory
+            .getMappingExecutor(sqlStatementInfo.getMappingPolicy(), this, this.session);
+        obj = mappingExecutor.executeQuery(sqlStatementInfo, obj);
+      }
+
+      return obj;
     } catch (Exception e) {
-      throw new SQLExecuteException(e);
+      throw new ExecuteException(e);
     } finally {
       JDBCUtil.closeResultSet(rs);
       JDBCUtil.closeStatement(pstmt);
     }
   }
 
-  private Object executeUpdate(SqlStatementInfo sqlStatementInfo,
-      Method invokeMethod) {
+  public int executeUpdate(SqlStatementInfo sqlStatementInfo) throws ExecuteException {
     PreparedStatement pstmt = null;
     try {
       pstmt = createPreparedStatement(sqlStatementInfo);
       int updateCount = pstmt.executeUpdate();
-
-      Class<?> returnClazz = invokeMethod.getReturnType();
-
-      if (null == returnClazz) {
-        return null;
-      } else if (Integer.class == returnClazz || Integer.TYPE == returnClazz) {
-        return updateCount;
-      } else {
-        return null;
+      if (sqlStatementInfo.isMapping()) {
+        IMappingExecutor mappingExecutor = mappingExecutorFactory
+            .getMappingExecutor(sqlStatementInfo.getMappingPolicy(), this, this.session);
+        updateCount += mappingExecutor.executeExecute(sqlStatementInfo, updateCount);
       }
+      return updateCount;
     } catch (Exception e) {
-      throw new SQLExecuteException(e);
+      throw new ExecuteException(e);
     } finally {
       JDBCUtil.closeStatement(pstmt);
     }
@@ -127,7 +100,7 @@ public class SqlExecutor implements ISqlExecutor {
     boolean useScrollable = hasOffset && !(usePaged && dialect.supportOffset());
     ScrollMode scrollMode = null == sqlStatementInfo.getScrollMode() ? ScrollMode.SCROLL_INSENSITIVE
         : sqlStatementInfo.getScrollMode();
-
+    Connection conn = session.getConnection();
     if (useScrollable) {
       if (callable) {
         pstmt = conn.prepareCall(sql, scrollMode.getResultSetType(),
@@ -147,7 +120,7 @@ public class SqlExecutor implements ISqlExecutor {
     ParameterMetaData pmd = pstmt.getParameterMetaData();
     if (null != params) {
       if (pmd.getParameterCount() != params.size()) {
-        throw new SqlAnalyzeException("Parameters count is NOT matched.");
+        throw new SQLException("Parameters count is NOT matched.");
       }
       for (int i = 0; i < params.size(); i++) {
         Object obj = params.get(i);

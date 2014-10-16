@@ -31,4 +31,8 @@ public class Oracle9iDialect extends Oracle8iDialect {
     return pagingSelect.toString();
   }
 
+  @Override
+  public String getCurrentTimestampSelectString() {
+    return "select systimestamp from dual";
+  }
 }

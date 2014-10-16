@@ -130,4 +130,27 @@ public class Dialect implements IDialect {
     throw new UnsupportedOperationException(getClass().getName()
         + " does not support resultsets via stored procedures");
   }
+  
+  /**
+   * Retrieve the command used to retrieve the current timestamp from the
+   * database.
+   *
+   * @return The command.
+   */
+  @Override
+  public String getCurrentTimestampSelectString() {
+    throw new UnsupportedOperationException( "Database not known to define a current timestamp function" );
+  }
+  
+  /**
+   * Get the select command to use to retrieve the last generated IDENTITY
+   * value.
+   *
+   * @return The appropriate select command
+   * @throws MappingException If IDENTITY generation is not supported.
+   */
+  @Override
+  public String getIdentitySelectString() {
+    throw new UnsupportedOperationException(getClass().getName() + " does not support identity key generation" );
+  }
 }

@@ -16,7 +16,7 @@ import com.elminster.easydao.db.annotation.Column;
 import com.elminster.easydao.db.annotation.DAO;
 import com.elminster.easydao.db.annotation.Entity;
 import com.elminster.easydao.db.annotation.Key;
-import com.elminster.easydao.db.annotation.KeyPolicy;
+import com.elminster.easydao.db.id.KeyPolicy;
 
 public class ORMModifyAnalyzerTest {
 
