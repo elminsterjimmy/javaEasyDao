@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="easy-dao-framework" default="all" basedir=".">
+
+	<!--
+	<property file="build.properties" />
+	-->
+	<property environment="env" />
+	<property name="encoding"        value="UTF-8" />
+	<property name="source.dir"      value="src" />
+	<property name="conf.dir"        value="conf" />
+	<property name="build.dir"       value="build" />
+	<property name="lib.dir"         value="lib" />
+	<property name="classes.dir"     value="${build.dir}/classes" />
+	<property name="javadoc.dir"     value="${build.dir}/javadoc" />
+	<property name="jar.file"        value="easy-dao-framework.jar" />
+	
+	<target name="clean">
+		<delete dir="${build.dir}" />
+	</target>
+
+	<target name="mkdir">
+		<mkdir dir="${build.dir}"/>
+	</target>
+
+	<target name="all" depends="clean, mkdir, compile, jar" />
+
+	<path id="project.class.path">
+		<pathelement location="${conf.dir}" />
+		<pathelement location="${classes.dir}" />
+		<fileset dir="${lib.dir}">
+			<include name="**/*.jar" />
+		</fileset>
+	</path>
+	
+	<target name="init">
+			<mkdir dir="${build.dir}" />
+			<mkdir dir="${classes.dir}" />
+	</target>
+	
+	<target name="compile" depends="init">
+		<javac
+			srcdir="${source.dir}"
+			destdir="${classes.dir}"
+			encoding="${encoding}"
+			debug="on"
+			deprecation="on">
+			<classpath refid="project.class.path" />
+		</javac>
+		<copy todir="${classes.dir}">
+			<fileset dir="${source.dir}">
+				<include name="**/*" />
+				<exclude name="**/*.java" />
+			</fileset>
+		</copy>
+	</target>
+	
+	<target name="jar" depends="compile">
+		<jar destfile="${build.dir}/${jar.file}">
+			<manifest>
+				<attribute name="Specification-Title" value="Easy DAO Framework" />
+				<attribute name="Specification-Version" value="v1.0.0" />
+				<attribute name="Author" value="Jinglei Gu" />
+				<attribute name="Contact" value="elminster.jimmy@gmail.com" />
+			</manifest>
+			<fileset dir="${classes.dir}">
+				<include name="**/*" />
+				<exclude name="**/test/**"/>
+			</fileset>
+		</jar>
+	</target>
+
+</project> 
