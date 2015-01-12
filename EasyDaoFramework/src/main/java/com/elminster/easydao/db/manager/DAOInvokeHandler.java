@@ -48,6 +48,7 @@ public class DAOInvokeHandler extends InterfaceInvocationHandler {
 		SqlStatementInfo sqlStatementInfo = sqlAnalyzer.parser(method, args);
 		
 		ISqlExecutor sqlExecutor = sqlExecutorFactory.getSQLExecutor(sqlStatementInfo, session);
+		sqlExecutor.setOriginalClass(this.getOriginalClass());
 		return sqlExecutor.execute(sqlStatementInfo, method, args);
 	}
 }

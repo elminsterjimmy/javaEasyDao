@@ -32,13 +32,14 @@ public class SqlExecutor implements ISqlExecutor {
   private Connection conn;
   private ResultSetHandlerFactory resultSetHandlerFactory = ResultSetHandlerFactory.getInstance();
   private DAOSupportSession session;
-  
+  private Class<?> originalClass;
+
   public SqlExecutor(DAOSupportSession session) {
     this.session = session;
   }
-  
-  public Object execute(SqlStatementInfo sqlStatementInfo, Method invokeMethod,
-      Object[] args) throws SQLExecuteException {
+
+  public Object execute(SqlStatementInfo sqlStatementInfo, Method invokeMethod, Object[] args)
+      throws SQLExecuteException {
     this.conn = getConnection(invokeMethod, args);
     Object rst = null;
     SqlType sqlType = sqlStatementInfo.getAnalyzedSqlType();
@@ -54,16 +55,17 @@ public class SqlExecutor implements ISqlExecutor {
   }
 
   private Connection getConnection(Method invokeMethod, Object[] args) {
-    for (Object arg : args) {
-      if (arg instanceof Connection) {
-        return (Connection) arg;
+    if (null != args) {
+      for (Object arg : args) {
+        if (arg instanceof Connection) {
+          return (Connection) arg;
+        }
       }
     }
     return session.getConnection();
   }
 
-  private Object executeQuery(SqlStatementInfo sqlStatementInfo,
-      Method invokeMethod) {
+  private Object executeQuery(SqlStatementInfo sqlStatementInfo, Method invokeMethod) {
 
     PreparedStatement pstmt = null;
     ResultSet rs = null;
@@ -72,8 +74,7 @@ public class SqlExecutor implements ISqlExecutor {
       pstmt = createPreparedStatement(sqlStatementInfo);
       rs = getResultSet(pstmt, sqlStatementInfo);
 
-      resultSetHandler = resultSetHandlerFactory
-          .getResultSetHandler(invokeMethod);
+      resultSetHandler = resultSetHandlerFactory.getResultSetHandler(invokeMethod, originalClass);
       return resultSetHandler.handleResultSet(rs);
     } catch (Exception e) {
       throw new SQLExecuteException(e);
@@ -83,8 +84,7 @@ public class SqlExecutor implements ISqlExecutor {
     }
   }
 
-  private Object executeUpdate(SqlStatementInfo sqlStatementInfo,
-      Method invokeMethod) {
+  private Object executeUpdate(SqlStatementInfo sqlStatementInfo, Method invokeMethod) {
     PreparedStatement pstmt = null;
     try {
       pstmt = createPreparedStatement(sqlStatementInfo);
@@ -106,8 +106,7 @@ public class SqlExecutor implements ISqlExecutor {
     }
   }
 
-  private PreparedStatement createPreparedStatement(
-      SqlStatementInfo sqlStatementInfo) throws SQLException {
+  private PreparedStatement createPreparedStatement(SqlStatementInfo sqlStatementInfo) throws SQLException {
     String sql = sqlStatementInfo.getAnalyzedSqlStatement();
     List<Object> params = sqlStatementInfo.getAnalyzedSqlParameters();
 
@@ -125,16 +124,14 @@ public class SqlExecutor implements ISqlExecutor {
     boolean callable = sqlStatementInfo.isCallable();
     boolean hasOffset = null == pagedData ? false : pagedData.hasOffset();
     boolean useScrollable = hasOffset && !(usePaged && dialect.supportOffset());
-    ScrollMode scrollMode = null == sqlStatementInfo.getScrollMode() ? ScrollMode.SCROLL_INSENSITIVE
-        : sqlStatementInfo.getScrollMode();
+    ScrollMode scrollMode = null == sqlStatementInfo.getScrollMode() ? ScrollMode.SCROLL_INSENSITIVE : sqlStatementInfo
+        .getScrollMode();
 
     if (useScrollable) {
       if (callable) {
-        pstmt = conn.prepareCall(sql, scrollMode.getResultSetType(),
-            ResultSet.CONCUR_READ_ONLY);
+        pstmt = conn.prepareCall(sql, scrollMode.getResultSetType(), ResultSet.CONCUR_READ_ONLY);
       } else {
-        pstmt = conn.prepareStatement(sql, scrollMode.getResultSetType(),
-            ResultSet.CONCUR_READ_ONLY);
+        pstmt = conn.prepareStatement(sql, scrollMode.getResultSetType(), ResultSet.CONCUR_READ_ONLY);
       }
     } else {
       if (callable) {
@@ -166,8 +163,7 @@ public class SqlExecutor implements ISqlExecutor {
     return pstmt;
   }
 
-  private ResultSet getResultSet(PreparedStatement pstmt,
-      SqlStatementInfo sqlStatementInfo) throws SQLException {
+  private ResultSet getResultSet(PreparedStatement pstmt, SqlStatementInfo sqlStatementInfo) throws SQLException {
     ResultSet rs = null;
     IDialect dialect = session.getDialect();
     PagedData pagedData = sqlStatementInfo.getPagedData();
@@ -197,8 +193,7 @@ public class SqlExecutor implements ISqlExecutor {
    *          paged data
    * @throws SQLException
    */
-  private void moveCursor(ResultSet rs, PagedData pagedData)
-      throws SQLException {
+  private void moveCursor(ResultSet rs, PagedData pagedData) throws SQLException {
     int startRow = pagedData.getStartRow();
     if (0 != startRow) {
       try {
@@ -211,5 +206,10 @@ public class SqlExecutor implements ISqlExecutor {
         }
       }
     }
+  }
+
+  @Override
+  public void setOriginalClass(Class<?> originalClass) {
+    this.originalClass = originalClass;
   }
 }

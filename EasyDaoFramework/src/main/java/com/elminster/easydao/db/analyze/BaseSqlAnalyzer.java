@@ -40,11 +40,13 @@ abstract public class BaseSqlAnalyzer implements ISqlAnalyzer {
     boolean usePaged = false;
     PagedData pagedData = null;
 
-    for (Object arg : methodArguments) {
-      if (arg instanceof PagedData) {
-        usePaged = true;
-        pagedData = (PagedData) arg;
-        break;
+    if (null != methodArguments) {
+      for (Object arg : methodArguments) {
+        if (arg instanceof PagedData) {
+          usePaged = true;
+          pagedData = (PagedData) arg;
+          break;
+        }
       }
     }
 

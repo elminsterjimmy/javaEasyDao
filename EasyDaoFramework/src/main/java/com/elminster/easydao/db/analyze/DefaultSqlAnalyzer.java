@@ -58,7 +58,7 @@ public class DefaultSqlAnalyzer extends BaseSqlAnalyzer implements ISqlAnalyzer 
    *          the method which original SQL statement is invoked
    * @param methodArguments
    *          the method's argument(s)
-   * @throws Exception 
+   * @throws Exception
    */
   public void analyzeSql(Method invokedMethod, Object... methodArguments) throws Exception {
     String originalSql = getOriginalSql(invokedMethod);
@@ -84,7 +84,8 @@ public class DefaultSqlAnalyzer extends BaseSqlAnalyzer implements ISqlAnalyzer 
       StringBuilder builder = new StringBuilder();
       for (int i = idx + PARAM_KEY.length(); i < analyzedSql.length(); i++) {
         char ch = analyzedSql.charAt(i);
-        if (SPACE == ch || COMMA == ch || CharacterConstants.LF == ch || CharacterConstants.CR == ch) {
+        if (SPACE == ch || COMMA == ch || CharacterConstants.LF == ch || CharacterConstants.CR == ch
+            || CharacterConstants.RIGHT_PARENTHESES == ch) {
           break;
         } else {
           if (DOT == ch) {
@@ -97,8 +98,7 @@ public class DefaultSqlAnalyzer extends BaseSqlAnalyzer implements ISqlAnalyzer 
       if (isSimpleData) {
         Object replaceValue = paramAnnoMap.get(replaceKey);
         if (null == replaceValue) {
-          throw new SqlAnalyzeException(
-              "SqlParam Annotation's value and argurment are NOT matched.");
+          throw new SqlAnalyzeException("SqlParam Annotation's value and argurment are NOT matched.");
         }
         analyzedSqlParameters.add(replaceValue);
       } else {
@@ -108,8 +108,7 @@ public class DefaultSqlAnalyzer extends BaseSqlAnalyzer implements ISqlAnalyzer 
         }
         Object obj = paramAnnoMap.get(splited[0]);
         if (null == obj) {
-          throw new SqlAnalyzeException(
-              "SqlParam Annotation's value and argurment are NOT matched.");
+          throw new SqlAnalyzeException("SqlParam Annotation's value and argurment are NOT matched.");
         }
         try {
           Field field = ReflectUtil.getDeclaredField(obj.getClass(), splited[1]);
@@ -122,17 +121,19 @@ public class DefaultSqlAnalyzer extends BaseSqlAnalyzer implements ISqlAnalyzer 
           throw new SqlAnalyzeException(e);
         }
       }
-      analyzedSql = analyzedSql.replaceFirst(PARAM_KEY_REGEX + replaceKey,
-          SQL_REPLACEMENT);
+      analyzedSql = analyzedSql.replaceFirst(PARAM_KEY_REGEX + replaceKey, SQL_REPLACEMENT);
     }
   }
 
   /**
    * Analyze the original SQL statement.
-   * @param originalSql the original SQL statement
-   * @param paramaterMap the parameters
+   * 
+   * @param originalSql
+   *          the original SQL statement
+   * @param paramaterMap
+   *          the parameters
    * @return analyzed SQL statement
-   * @throws ParseException 
+   * @throws ParseException
    */
   private String analyzeOriginalSql(String originalSql, Map<String, Object> parameterMap) throws ParseException {
     Engine engine = new Engine();

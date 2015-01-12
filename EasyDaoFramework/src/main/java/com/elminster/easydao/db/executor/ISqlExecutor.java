@@ -8,4 +8,6 @@ import com.elminster.easydao.db.exception.SQLExecuteException;
 public interface ISqlExecutor {
 
 	public Object execute(SqlStatementInfo sqlStatementInfo, Method invokeMethod, Object[] args) throws SQLExecuteException;
+
+  public void setOriginalClass(Class<?> originalClass);
 }
