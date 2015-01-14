@@ -7,6 +7,7 @@ import java.sql.ParameterMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.sql.Types;
 import java.util.List;
 
@@ -14,6 +15,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import com.elminster.common.util.JDBCUtil;
+import com.elminster.easydao.db.analyze.data.DBSelectValue;
 import com.elminster.easydao.db.analyze.data.PagedData;
 import com.elminster.easydao.db.analyze.data.ScrollMode;
 import com.elminster.easydao.db.analyze.data.SqlStatementInfo;
@@ -156,6 +158,29 @@ public class SqlExecutor implements ISqlExecutor {
           }
           pstmt.setNull(i + 1, type);
         } else {
+          if (obj instanceof DBSelectValue) {
+            // need read from database
+            DBSelectValue selectValue = (DBSelectValue) obj;
+            String selectValueSql = selectValue.getSelectValueSql();
+            Statement st = null;
+            ResultSet rs = null;
+            try {
+              st = conn.createStatement();
+              rs = st.executeQuery(selectValueSql);
+              if (rs.next()) {
+                obj = rs.getObject(1);
+              }
+            } catch (SQLException e) {
+              
+            } finally {
+              if (null != rs) {
+                rs.close();
+              }
+              if (null != st) {
+                st.close();
+              }
+            }
+          }
           pstmt.setObject(i + 1, obj);
         }
       }

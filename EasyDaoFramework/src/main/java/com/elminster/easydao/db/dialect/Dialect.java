@@ -19,8 +19,7 @@ public class Dialect implements IDialect {
    */
   @Override
   public String getLimitSql(String sql, boolean hasOffset) {
-    throw new UnsupportedOperationException(
-        "query result paged is not supported.");
+    throw new UnsupportedOperationException("query result paged is not supported.");
   }
 
   /**
@@ -30,8 +29,7 @@ public class Dialect implements IDialect {
    */
   @Override
   public String getTestConnectionSql() {
-    throw new UnsupportedOperationException(
-        "query test connection is not supported.");
+    throw new UnsupportedOperationException("query test connection is not supported.");
   }
 
   /**
@@ -108,10 +106,8 @@ public class Dialect implements IDialect {
    * @throws SQLException
    *           Indicates problems registering the OUT param.
    */
-  public int registerResultSetOutParameter(CallableStatement statement,
-      int position) throws SQLException {
-    throw new UnsupportedOperationException(getClass().getName()
-        + " does not support resultsets via stored procedures");
+  public int registerResultSetOutParameter(CallableStatement statement, int position) throws SQLException {
+    throw new UnsupportedOperationException(getClass().getName() + " does not support resultsets via stored procedures");
   }
 
   /**
@@ -125,9 +121,45 @@ public class Dialect implements IDialect {
    * @throws SQLException
    *           Indicates problems extracting the result set.
    */
-  public ResultSet getResultSet(CallableStatement statement)
-      throws SQLException {
-    throw new UnsupportedOperationException(getClass().getName()
-        + " does not support resultsets via stored procedures");
+  public ResultSet getResultSet(CallableStatement statement) throws SQLException {
+    throw new UnsupportedOperationException(getClass().getName() + " does not support resultsets via stored procedures");
   }
+
+  /**
+   * Generate the appropriate select statement to to retrieve the next value of
+   * a sequence.
+   * <p/>
+   * This should be a "stand alone" select statement.
+   * 
+   * @param sequenceName
+   *          the name of the sequence
+   * @return String The "nextval" select string.
+   * @throws MappingException
+   *           If sequences are not supported.
+   */
+  public String getSequenceNextValueSql(String sequenceName) {
+    throw new UnsupportedOperationException(getClass().getName() + " does not support sequences");
+  }
+  
+  /**
+   * Get the command used to select a GUID from the underlying database.
+   * <p/>
+   * Optional operation.
+   *
+   * @return The appropriate command.
+   */
+  public String getGUIdSql() {
+    throw new UnsupportedOperationException( getClass().getName() + " does not support GUIDs" );
+  }
+  
+  /**
+   * Retrieve the command used to retrieve the current timestamp from the
+   * database.
+   *
+   * @return The command.
+   */
+  public String getCurrentTimestampSql() {
+    throw new UnsupportedOperationException( "Database not known to define a current timestamp function" );
+  }
+  
 }

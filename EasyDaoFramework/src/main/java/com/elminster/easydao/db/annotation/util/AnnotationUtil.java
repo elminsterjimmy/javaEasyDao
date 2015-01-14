@@ -5,7 +5,6 @@ import java.lang.reflect.Field;
 import com.elminster.easydao.db.annotation.Column;
 import com.elminster.easydao.db.annotation.CustomerType;
 import com.elminster.easydao.db.annotation.Key;
-import com.elminster.easydao.db.annotation.KeyPolicy;
 import com.elminster.easydao.db.converter.ICustomerTypeConverter;
 import com.elminster.easydao.db.exception.SqlAnalyzeException;
 
@@ -21,14 +20,6 @@ abstract public class AnnotationUtil {
     return null != key;
   }
 
-  public static KeyPolicy getKeyPolicy(Field field) {
-    if (isKey(field)) {
-      Key key = field.getAnnotation(Key.class);
-      return key.policy();
-    }
-    return null;
-  }
-  
   public static Object getCustomerDBValue(Field field, Object value) {
     CustomerType customerData = field.getAnnotation(CustomerType.class);
     if (null != customerData) {

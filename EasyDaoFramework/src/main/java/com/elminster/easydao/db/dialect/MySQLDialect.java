@@ -39,4 +39,14 @@ public class MySQLDialect extends Dialect {
     }
     return ps.getResultSet();
   }
+  
+  @Override
+  public String getGUIdSql() {
+    return "select uuid()";
+  }
+  
+  @Override
+  public String getCurrentTimestampSql() {
+    return "select now()";
+  }
 }

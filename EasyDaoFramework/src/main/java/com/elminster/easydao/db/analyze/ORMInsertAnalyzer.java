@@ -1,9 +1,14 @@
 package com.elminster.easydao.db.analyze;
 
 import java.lang.reflect.Field;
+import java.util.UUID;
 
 import com.elminster.common.util.ReflectUtil;
+import com.elminster.common.util.StringUtil;
+import com.elminster.easydao.db.analyze.data.GUIDSelectValue;
+import com.elminster.easydao.db.analyze.data.SeqenceSelectValue;
 import com.elminster.easydao.db.analyze.data.SqlStatementInfo.SqlType;
+import com.elminster.easydao.db.annotation.Key;
 import com.elminster.easydao.db.annotation.KeyPolicy;
 import com.elminster.easydao.db.annotation.util.AnnotationUtil;
 import com.elminster.easydao.db.exception.SqlAnalyzeException;
@@ -30,12 +35,24 @@ public class ORMInsertAnalyzer extends ORMSqlAnalyzer {
     Field[] fields = ReflectUtil.getAllField(obj.getClass());
     boolean first = true;
     for (int i = 0; i < fields.length; i++) {
+      Object generatedValue = null;
       Field field = fields[i];
       if (AnnotationUtil.isKey(field)) {
-        KeyPolicy keyPolicy = AnnotationUtil.getKeyPolicy(field);
+        Key key = field.getAnnotation(Key.class);
+        KeyPolicy keyPolicy = key.policy();
         // auto inc policy is not necessary to set the key
         if (KeyPolicy.AUTO_INC_POLICY == keyPolicy) {
           continue;
+        } else if (KeyPolicy.UUID_POLICY == keyPolicy) {
+          generatedValue = UUID.randomUUID().toString();
+        } else if (KeyPolicy.SEQUENCE_POLICY == keyPolicy) {
+          String sequenceName = key.sequenceName();
+          if (StringUtil.isEmpty(sequenceName)) {
+            throw new SqlAnalyzeException("Sequence Name is required for SEQUENCE_POLICY key.");
+          }
+          generatedValue = new SeqenceSelectValue(getDialect(), sequenceName);;
+        } else if (KeyPolicy.GUID_POLICY == keyPolicy) {
+          generatedValue = new GUIDSelectValue(getDialect());
         }
       }
       if (AnnotationUtil.isColumn(field)) {
@@ -46,8 +63,13 @@ public class ORMInsertAnalyzer extends ORMSqlAnalyzer {
         }
         builder.append(getColumnName(field, getColumnConverter(obj)));
         try {
-          Object value = ReflectUtil.getFieldValue(obj, field);
-          value = AnnotationUtil.getCustomerDBValue(field, value);
+          Object value;
+          if (null == generatedValue) {
+            value = generatedValue;
+          } else {
+            value = ReflectUtil.getFieldValue(obj, field);
+            value = AnnotationUtil.getCustomerDBValue(field, value);
+          }
           analyzedSqlParameters.add(value);
         } catch (IllegalArgumentException e) {
           throw new SqlAnalyzeException(e);

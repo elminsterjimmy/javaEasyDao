@@ -105,7 +105,7 @@ abstract public class BaseSqlAnalyzer implements ISqlAnalyzer {
     }
   }
 
-  private IDialect getDialect() {
+  protected IDialect getDialect() {
     return session.getDialect();
   }
 

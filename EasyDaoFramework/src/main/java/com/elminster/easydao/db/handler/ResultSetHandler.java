@@ -15,7 +15,7 @@ abstract public class ResultSetHandler implements IResultSetHandler {
 	@SuppressWarnings({"rawtypes", "unchecked"})
 	protected List mapping(ResultSet rs) throws Exception {
 		List list = new ArrayList();
-		while(rs.next()) {
+		while (rs.next()) {
 			Object obj = ResultSetHelper.mapRow(rs, mappingClass);
 			list.add(obj);
 		}
