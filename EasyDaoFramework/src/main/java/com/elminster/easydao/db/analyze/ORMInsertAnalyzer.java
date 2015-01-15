@@ -64,7 +64,7 @@ public class ORMInsertAnalyzer extends ORMSqlAnalyzer {
         builder.append(getColumnName(field, getColumnConverter(obj)));
         try {
           Object value;
-          if (null == generatedValue) {
+          if (null != generatedValue) {
             value = generatedValue;
           } else {
             value = ReflectUtil.getFieldValue(obj, field);
