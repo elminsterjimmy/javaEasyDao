@@ -4,11 +4,11 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
-abstract public class ResultSetHandler implements IResultSetHandler {
+abstract public class ORMResultSetHandler implements IResultSetHandler {
 	
 	protected Class<?> mappingClass;
 	
-	public ResultSetHandler(Class<?> mappingClass) {
+	public ORMResultSetHandler(Class<?> mappingClass) {
 		this.mappingClass = mappingClass;
 	}
 	

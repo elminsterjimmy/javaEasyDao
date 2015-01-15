@@ -24,7 +24,7 @@ import com.elminster.easydao.db.dialect.IDialect;
 import com.elminster.easydao.db.exception.SQLExecuteException;
 import com.elminster.easydao.db.exception.SqlAnalyzeException;
 import com.elminster.easydao.db.handler.IResultSetHandler;
-import com.elminster.easydao.db.handler.ResultSetHandlerFactory;
+import com.elminster.easydao.db.handler.ORMResultSetHandlerFactory;
 import com.elminster.easydao.db.manager.DAOSupportSession;
 
 public class SqlExecutor implements ISqlExecutor {
@@ -32,7 +32,7 @@ public class SqlExecutor implements ISqlExecutor {
   private static final Log logger = LogFactory.getLog(SqlExecutor.class);
 
   private Connection conn;
-  private ResultSetHandlerFactory resultSetHandlerFactory = ResultSetHandlerFactory.getInstance();
+  private ORMResultSetHandlerFactory resultSetHandlerFactory = ORMResultSetHandlerFactory.getInstance();
   private DAOSupportSession session;
   private Class<?> originalClass;
 

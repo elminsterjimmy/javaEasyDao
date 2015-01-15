@@ -5,13 +5,13 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.List;
 
-public class ResultSetHandlerFactory {
+public class ORMResultSetHandlerFactory {
 
-	private static ResultSetHandlerFactory instance = new ResultSetHandlerFactory();
+	private static ORMResultSetHandlerFactory instance = new ORMResultSetHandlerFactory();
 	
-	private ResultSetHandlerFactory() {}
+	private ORMResultSetHandlerFactory() {}
 	
-	public static ResultSetHandlerFactory getInstance() {
+	public static ORMResultSetHandlerFactory getInstance() {
 		return instance;
 	}
 	
@@ -40,11 +40,11 @@ public class ResultSetHandlerFactory {
 			  throw new NullPointerException("cannot found generic type for class: " + originalClass.getName());
 			}
 			Class<?> clazz = Class.forName(className);
-			resultSetHandler = new ListResultSetHandler(clazz);
+			resultSetHandler = new ORMListResultSetHandler(clazz);
 		} else if (returnClazz.isArray()) {
 			// Array
 		} else {
-			resultSetHandler = new ObjectResultSetHandler(returnClazz);
+			resultSetHandler = new ORMObjectResultSetHandler(returnClazz);
 		}
 		return resultSetHandler;
 	}

@@ -2,10 +2,10 @@ package com.elminster.easydao.db.handler;
 
 import java.sql.ResultSet;
 
-public class ListResultSetHandler extends ResultSetHandler implements IResultSetHandler {
+public class ORMListResultSetHandler extends ORMResultSetHandler implements IResultSetHandler {
 
 
-	public ListResultSetHandler(Class<?> mappingClass) {
+	public ORMListResultSetHandler(Class<?> mappingClass) {
 		super(mappingClass);
 	}
 
