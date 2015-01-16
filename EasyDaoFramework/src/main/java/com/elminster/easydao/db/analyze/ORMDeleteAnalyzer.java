@@ -6,12 +6,11 @@ import com.elminster.common.util.ReflectUtil;
 import com.elminster.easydao.db.analyze.data.SqlStatementInfo.SqlType;
 import com.elminster.easydao.db.annotation.util.AnnotationUtil;
 import com.elminster.easydao.db.exception.SqlAnalyzeException;
-import com.elminster.easydao.db.manager.DAOSupportSession;
 
 public class ORMDeleteAnalyzer extends ORMSqlAnalyzer {
 
-  public ORMDeleteAnalyzer(DAOSupportSession session) {
-    super(session);
+  public ORMDeleteAnalyzer() {
+    super();
   }
 
   @Override

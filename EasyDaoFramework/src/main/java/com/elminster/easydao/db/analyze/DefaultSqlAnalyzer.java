@@ -25,7 +25,6 @@ import com.elminster.easydao.db.annotation.SqlFile;
 import com.elminster.easydao.db.annotation.SqlParam;
 import com.elminster.easydao.db.annotation.util.AnnotationUtil;
 import com.elminster.easydao.db.exception.SqlAnalyzeException;
-import com.elminster.easydao.db.manager.DAOSupportSession;
 
 /**
  * A simple SQL analyzer implement.
@@ -46,8 +45,8 @@ public class DefaultSqlAnalyzer extends BaseSqlAnalyzer implements ISqlAnalyzer 
   /**
    * Constructor
    */
-  public DefaultSqlAnalyzer(DAOSupportSession session) {
-    super(session);
+  public DefaultSqlAnalyzer() {
+    super();
   }
 
   /**

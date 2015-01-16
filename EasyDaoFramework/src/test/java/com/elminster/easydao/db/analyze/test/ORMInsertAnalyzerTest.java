@@ -18,7 +18,7 @@ import com.elminster.easydao.db.annotation.Entity;
 import com.elminster.easydao.db.annotation.Key;
 import com.elminster.easydao.db.annotation.KeyPolicy;
 
-public class ORMInsertAnalyzerTest {
+public class ORMInsertAnalyzerTest extends AnalyzeTestBase {
 
 	@Test
 	public void testNormalPolicy() throws Exception {
@@ -30,7 +30,7 @@ public class ORMInsertAnalyzerTest {
 		
 		Method invokedMethod = ReflectUtil.getDeclaredMethod(TestDAO.class, "insert", new Object[] {entry});
 		
-		ORMInsertAnalyzer analyzer = new ORMInsertAnalyzer(new TestDummySession());
+		ORMInsertAnalyzer analyzer = new ORMInsertAnalyzer();
 		SqlStatementInfo sqlStatementInfo = analyzer.parser(invokedMethod, entry);
 		Assert.assertEquals("INSERT INTO T_TEST (id, name, pass, account) VALUES (?, ?, ?, ?)", sqlStatementInfo.getAnalyzedSqlStatement());
 		
@@ -54,7 +54,7 @@ public class ORMInsertAnalyzerTest {
 		
 		Method invokedMethod = ReflectUtil.getDeclaredMethod(TestDAO.class, "insert", new Object[] {entry});
 		
-		ORMInsertAnalyzer analyzer = new ORMInsertAnalyzer(new TestDummySession());
+		ORMInsertAnalyzer analyzer = new ORMInsertAnalyzer();
 		SqlStatementInfo sqlStatementInfo = analyzer.parser(invokedMethod, entry);
 		Assert.assertEquals("INSERT INTO T_TEST (name, pass, account) VALUES (?, ?, ?)", sqlStatementInfo.getAnalyzedSqlStatement());
 		

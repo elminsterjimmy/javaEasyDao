@@ -4,7 +4,6 @@ import java.lang.reflect.Method;
 
 import com.elminster.common.util.ObjectUtil;
 import com.elminster.easydao.db.constants.SqlConstants;
-import com.elminster.easydao.db.manager.DAOSupportSession;
 
 public class DefaultSqlAnalyzerFactory implements ISqlAnalyzerFactory {
 
@@ -17,19 +16,19 @@ public class DefaultSqlAnalyzerFactory implements ISqlAnalyzerFactory {
     return instance;
   }
 
-  public ISqlAnalyzer getSqlAnalyzer(Method method, Object[] args, DAOSupportSession session) {
+  public ISqlAnalyzer getSqlAnalyzer(Method method, Object[] args) {
     ISqlAnalyzer sqlAnalyzer = null;
     String methodName = method.getName();
     if (ObjectUtil.contains(SqlConstants.INSERT_KEYWORD, methodName)) {
-      sqlAnalyzer = new ORMInsertAnalyzer(session);
+      sqlAnalyzer = new ORMInsertAnalyzer();
     } else if (ObjectUtil.contains(SqlConstants.DELETE_KEYWORD, methodName)) {
-      sqlAnalyzer = new ORMDeleteAnalyzer(session);
+      sqlAnalyzer = new ORMDeleteAnalyzer();
     } else if (ObjectUtil.contains(SqlConstants.MODIFY_KEYWORD, methodName)) {
-      sqlAnalyzer = new ORMModifyAnalyzer(session);
+      sqlAnalyzer = new ORMModifyAnalyzer();
     } else if (ObjectUtil.contains(SqlConstants.FETCH_KEYWORD, methodName)) {
-      sqlAnalyzer = new ORMFetchAnalyzer(session);
+      sqlAnalyzer = new ORMFetchAnalyzer();
     } else {
-      sqlAnalyzer = new DefaultSqlAnalyzer(session);
+      sqlAnalyzer = new DefaultSqlAnalyzer();
     }
     return sqlAnalyzer;
   }

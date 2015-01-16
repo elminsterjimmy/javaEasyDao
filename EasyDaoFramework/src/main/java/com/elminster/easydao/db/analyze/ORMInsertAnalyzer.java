@@ -12,12 +12,11 @@ import com.elminster.easydao.db.annotation.Key;
 import com.elminster.easydao.db.annotation.KeyPolicy;
 import com.elminster.easydao.db.annotation.util.AnnotationUtil;
 import com.elminster.easydao.db.exception.SqlAnalyzeException;
-import com.elminster.easydao.db.manager.DAOSupportSession;
 
 public class ORMInsertAnalyzer extends ORMSqlAnalyzer {
 
-  public ORMInsertAnalyzer(DAOSupportSession session) {
-    super(session);
+  public ORMInsertAnalyzer() {
+    super();
   }
 
   @Override

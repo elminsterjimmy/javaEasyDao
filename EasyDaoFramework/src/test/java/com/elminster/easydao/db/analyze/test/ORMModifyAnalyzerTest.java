@@ -18,7 +18,7 @@ import com.elminster.easydao.db.annotation.Entity;
 import com.elminster.easydao.db.annotation.Key;
 import com.elminster.easydao.db.annotation.KeyPolicy;
 
-public class ORMModifyAnalyzerTest {
+public class ORMModifyAnalyzerTest extends AnalyzeTestBase {
 
 	@Test
 	public void testNormalPolicy() throws Exception {
@@ -28,7 +28,7 @@ public class ORMModifyAnalyzerTest {
 		
 		Method invokedMethod = ReflectUtil.getDeclaredMethod(TestDAO.class, "delete", new Object[] {entry});
 		
-		ORMModifyAnalyzer analyzer = new ORMModifyAnalyzer(new TestDummySession());
+		ORMModifyAnalyzer analyzer = new ORMModifyAnalyzer();
 		SqlStatementInfo sqlStatementInfo = analyzer.parser(invokedMethod, entry);
 		Assert.assertEquals("UPDATE T_TEST SET pass = ? WHERE id = ?", sqlStatementInfo.getAnalyzedSqlStatement());
 		
@@ -50,7 +50,7 @@ public class ORMModifyAnalyzerTest {
 		
 		Method invokedMethod = ReflectUtil.getDeclaredMethod(TestDAO.class, "delete", new Object[] {entry});
 		
-		ORMModifyAnalyzer analyzer = new ORMModifyAnalyzer(new TestDummySession());
+		ORMModifyAnalyzer analyzer = new ORMModifyAnalyzer();
 		SqlStatementInfo sqlStatementInfo = analyzer.parser(invokedMethod, entry);
 		Assert.assertEquals("UPDATE T_TEST SET pass = ? , account = ? WHERE id = ? AND name = ?", sqlStatementInfo.getAnalyzedSqlStatement());
 		

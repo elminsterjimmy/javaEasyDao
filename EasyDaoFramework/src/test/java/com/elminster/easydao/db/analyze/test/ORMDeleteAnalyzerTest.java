@@ -18,8 +18,8 @@ import com.elminster.easydao.db.annotation.Entity;
 import com.elminster.easydao.db.annotation.Key;
 import com.elminster.easydao.db.annotation.KeyPolicy;
 
-public class ORMDeleteAnalyzerTest {
-
+public class ORMDeleteAnalyzerTest extends AnalyzeTestBase {
+  
 	@Test
 	public void testNormalPolicy() throws Exception {
 		TestEntry entry = new TestEntry();
@@ -30,7 +30,7 @@ public class ORMDeleteAnalyzerTest {
 		
 		Method invokedMethod = ReflectUtil.getDeclaredMethod(TestDAO.class, "delete", new Object[] {entry});
 		
-		ORMDeleteAnalyzer analyzer = new ORMDeleteAnalyzer(new TestDummySession());
+		ORMDeleteAnalyzer analyzer = new ORMDeleteAnalyzer();
 		SqlStatementInfo sqlStatementInfo = analyzer.parser(invokedMethod, entry);
 		Assert.assertEquals("DELETE FROM T_TEST WHERE id = ?", sqlStatementInfo.getAnalyzedSqlStatement());
 		
@@ -51,7 +51,7 @@ public class ORMDeleteAnalyzerTest {
 		
 		Method invokedMethod = ReflectUtil.getDeclaredMethod(TestDAO.class, "delete", new Object[] {entry});
 		
-		ORMDeleteAnalyzer analyzer = new ORMDeleteAnalyzer(new TestDummySession());
+		ORMDeleteAnalyzer analyzer = new ORMDeleteAnalyzer();
 		SqlStatementInfo sqlStatementInfo = analyzer.parser(invokedMethod, entry);
 		Assert.assertEquals("DELETE FROM T_TEST WHERE id = ? AND name = ?", sqlStatementInfo.getAnalyzedSqlStatement());
 		

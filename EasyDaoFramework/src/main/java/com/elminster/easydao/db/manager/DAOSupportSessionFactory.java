@@ -30,7 +30,7 @@ public class DAOSupportSessionFactory {
   private IConfiguration configuraton;
 
   private DataSource ds;
-
+  
   public DAOSupportSessionFactory(DataSource ds) {
     this.ds = ds;
     this.configuraton = new BaseConfiguration();
@@ -57,6 +57,7 @@ public class DAOSupportSessionFactory {
       }
     } while (!testOrCloseConnection(session));
     usedSessions.put(session.getId(), session);
+    ThreadSessionMap.INSTANCE.putSessionPerThread(Thread.currentThread(), session);
     return session;
   }
 
@@ -64,6 +65,7 @@ public class DAOSupportSessionFactory {
       throws SQLException {
     usedSessions.remove(session.getId());
     freeSessions.add(session);
+    ThreadSessionMap.INSTANCE.removeSessionPerThread(Thread.currentThread(), session);
   }
 
   public boolean clearFreeSession() {
