@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.elminster.easydao.db.config.IConfiguration;
+import com.elminster.easydao.db.context.IContext;
 
 public class DAOSupportSessionFactoryManager {
 
@@ -20,7 +21,7 @@ public class DAOSupportSessionFactoryManager {
     return manager;
   }
 
-  public static DAOSupportSessionFactoryManager getSessionManager(IConfiguration context) {
+  public static DAOSupportSessionFactoryManager getSessionManager(IContext context) {
     return manager;
   }
   
