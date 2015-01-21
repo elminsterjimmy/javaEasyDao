@@ -16,7 +16,7 @@ import com.elminster.easydao.db.handler.ListMapResultSetHandler;
 public class SchemaReader {
 
   @SuppressWarnings("unchecked")
-  public ITable getTableMetaData(Connection conn, String catalog, String schemaName, String tableName)
+  public static ITable getTableMetaData(Connection conn, String catalog, String schemaName, String tableName)
       throws SQLException, CollectSchemaException {
     Table table = new Table(tableName);
     DatabaseMetaData dbmd = conn.getMetaData();
@@ -142,12 +142,12 @@ public class SchemaReader {
     return table;
   }
 
-  public ITable getTableMetaData(Connection conn, String schemaName, String tableName) throws SQLException,
+  public static ITable getTableMetaData(Connection conn, String schemaName, String tableName) throws SQLException,
       CollectSchemaException {
     return getTableMetaData(conn, null, schemaName, tableName);
   }
 
-  public ITable getTableMetaData(Connection conn, String tableName) throws SQLException, CollectSchemaException {
+  public static ITable getTableMetaData(Connection conn, String tableName) throws SQLException, CollectSchemaException {
     return getTableMetaData(conn, null, null, tableName);
   }
 }

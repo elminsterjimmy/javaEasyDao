@@ -113,14 +113,22 @@ public class DAOSupportSession {
   public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append("Connection:\n");
-    try {
-      sb.append(conn.getClientInfo());
-    } catch (SQLException e) {
-      // ignore
-      e = null;
+    if (null != conn) {
+      try {
+        sb.append(conn.getClientInfo());
+      } catch (SQLException e) {
+        // ignore
+        e = null;
+      }
+    } else {
+      sb.append("null");
     }
     sb.append("\ndialect:\n");
-    sb.append(dialect.toString());
+    if (null != dialect) {
+      sb.append(dialect.toString());
+    } else {
+      sb.append("null");
+    }
     return sb.toString();
   }
 

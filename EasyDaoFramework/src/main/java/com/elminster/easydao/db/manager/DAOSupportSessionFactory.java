@@ -31,19 +31,14 @@ public class DAOSupportSessionFactory {
 
   private DataSource ds;
   
-  public DAOSupportSessionFactory(DataSource ds) {
+  public DAOSupportSessionFactory(String factoryId, DataSource ds) {
     this.ds = ds;
     this.configuraton = new BaseConfiguration();
-    this.factoryId = generateFactoryId();
+    this.factoryId = factoryId;
   }
-
-  /**
-   * FIXME
-   * Generate the factory id.
-   * @return the factory id
-   */
-  private String generateFactoryId() {
-    return UUID.randomUUID().toString();
+  
+  public DAOSupportSessionFactory(DataSource ds) {
+    this(UUID.randomUUID().toString(), ds);
   }
 
   public synchronized DAOSupportSession popDAOSupportSession() throws SQLException {

@@ -3,6 +3,9 @@ package com.elminster.easydao.test;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Properties;
+
+import javax.sql.DataSource;
 
 import junit.framework.Assert;
 
@@ -15,12 +18,12 @@ import com.elminster.common.constants.Constants.StringConstants;
 import com.elminster.common.util.FileUtil;
 import com.elminster.common.util.StringUtil;
 import com.elminster.easydao.db.analyze.data.PagedData;
+import com.elminster.easydao.db.ds.DataSourceFactory;
 import com.elminster.easydao.db.manager.DAOSupportManager;
 import com.elminster.easydao.db.manager.DAOSupportSession;
 import com.elminster.easydao.db.manager.DAOSupportSessionFactory;
 import com.elminster.easydao.db.manager.DAOSupportSessionFactoryManager;
 import com.elminster.easydao.db.query.IQuery;
-import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 
 public class EasyDaoTest {
 
@@ -29,10 +32,10 @@ public class EasyDaoTest {
   @BeforeClass
   public static void init() throws Exception {
     DOMConfigurator.configure("log4j.xml");
-    MysqlDataSource ds = new MysqlDataSource();
-    ds.setUrl("jdbc:mysql://localhost:3306/test");
-    ds.setUser("root");
-    ds.setPassword("root");
+    DataSourceFactory dsFactory = DataSourceFactory.INSTANCE;
+    Properties properties = new Properties();
+    properties.load(EasyDaoTest.class.getResourceAsStream("DataSource.properties"));
+    DataSource ds = dsFactory.getDataSource(properties);
     DAOSupportSessionFactory sessionFactory = new DAOSupportSessionFactory(ds);
     DAOSupportSessionFactoryManager.getSessionManager().putSessionFactory(
         sessionFactory);
