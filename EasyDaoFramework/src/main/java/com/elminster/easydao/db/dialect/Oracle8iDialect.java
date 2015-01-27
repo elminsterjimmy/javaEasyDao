@@ -108,4 +108,19 @@ public class Oracle8iDialect extends Dialect {
     ps.execute();
     return (ResultSet) ps.getObject(1);
   }
+  
+  @Override
+  public String getSequenceNextValueSql(String sequenceName) {
+    return "select " + sequenceName + ".nextval" + " from dual";
+  }
+  
+  @Override
+  public String getGUIdSql() {
+    return "select rawtohex(sys_guid()) from dual";
+  }
+  
+  @Override
+  public String getCurrentTimestampSql() {
+    return "select sysdate from dual";
+  }
 }

@@ -15,14 +15,14 @@ import com.elminster.easydao.db.annotation.DAO;
 import com.elminster.easydao.db.annotation.Sql;
 import com.elminster.easydao.db.annotation.SqlParam;
 
-public class SqlAnalyzerTest {
+public class SqlAnalyzerTest extends AnalyzeTestBase {
 
 	@Test
 	public void testAnalyzedSql1() throws Exception {
 
 		Object[] methodArguments = new Object[] {"testId", "testS"};
 		Method method = ReflectUtil.getDeclaredMethod(TestDAO.class, "getName", methodArguments);
-		ISqlAnalyzer analyzer = new DefaultSqlAnalyzer(new TestDummySession());
+		ISqlAnalyzer analyzer = new DefaultSqlAnalyzer();
 		SqlStatementInfo sqlStatementInfo = analyzer.parser(method, methodArguments);
 		String analyzedSql = sqlStatementInfo.getAnalyzedSqlStatement();
 		List<Object> analyzedSqlParameters = sqlStatementInfo.getAnalyzedSqlParameters();
@@ -42,7 +42,7 @@ public class SqlAnalyzerTest {
 		Object[] methodArguments = new Object[] {entry};
 		Method method = ReflectUtil.getDeclaredMethod(TestDAO.class, "getId", methodArguments);
 
-		ISqlAnalyzer analyzer = new DefaultSqlAnalyzer(new TestDummySession());
+		ISqlAnalyzer analyzer = new DefaultSqlAnalyzer();
 		SqlStatementInfo sqlStatementInfo = analyzer.parser(method, methodArguments);
 		String analyzedSql = sqlStatementInfo.getAnalyzedSqlStatement();
 		List<Object> analyzedSqlParameters = sqlStatementInfo.getAnalyzedSqlParameters();

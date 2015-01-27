@@ -53,4 +53,14 @@ public class SQLServerDialect extends Dialect {
     // but you can't do it now or the ResultSet you just got will be closed
     return ps.getResultSet();
   }
+  
+  @Override
+  public String getSequenceNextValueSql(String sequenceName) {
+    return "select next value for " + sequenceName;
+  }
+  
+  @Override
+  public String getCurrentTimestampSql() {
+    return "select current_timestamp";
+  }
 }

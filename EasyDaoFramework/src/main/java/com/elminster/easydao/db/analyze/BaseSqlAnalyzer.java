@@ -11,16 +11,15 @@ import com.elminster.easydao.db.constants.SqlConstants;
 import com.elminster.easydao.db.dialect.Dialect;
 import com.elminster.easydao.db.dialect.IDialect;
 import com.elminster.easydao.db.manager.DAOSupportSession;
+import com.elminster.easydao.db.manager.ThreadSessionMap;
 
 abstract public class BaseSqlAnalyzer implements ISqlAnalyzer {
 
   protected Class<?> originalClass;
   protected String analyzedSql;
   protected List<Object> analyzedSqlParameters = new ArrayList<Object>();
-  protected DAOSupportSession session;
 
-  public BaseSqlAnalyzer(DAOSupportSession session) {
-    this.session = session;
+  public BaseSqlAnalyzer() {
   }
   
   /**
@@ -105,7 +104,11 @@ abstract public class BaseSqlAnalyzer implements ISqlAnalyzer {
     }
   }
 
-  private IDialect getDialect() {
+  protected IDialect getDialect() {
+    DAOSupportSession session = ThreadSessionMap.INSTANCE.getSessionPerThread(Thread.currentThread());
+    if (null == session) {
+      throw new RuntimeException("Session is null.");
+    }
     return session.getDialect();
   }
 

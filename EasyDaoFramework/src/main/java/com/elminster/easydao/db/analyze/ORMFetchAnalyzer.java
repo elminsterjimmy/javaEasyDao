@@ -7,12 +7,11 @@ import com.elminster.easydao.db.analyze.data.SqlStatementInfo.SqlType;
 import com.elminster.easydao.db.annotation.util.AnnotationUtil;
 import com.elminster.easydao.db.constants.SqlConstants;
 import com.elminster.easydao.db.exception.SqlAnalyzeException;
-import com.elminster.easydao.db.manager.DAOSupportSession;
 
 public class ORMFetchAnalyzer extends ORMSqlAnalyzer {
 
-  public ORMFetchAnalyzer(DAOSupportSession session) {
-    super(session);
+  public ORMFetchAnalyzer() {
+    super();
   }
 
   @Override

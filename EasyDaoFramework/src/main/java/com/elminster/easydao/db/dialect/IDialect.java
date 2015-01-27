@@ -21,4 +21,10 @@ public interface IDialect {
   public ResultSet getResultSet(CallableStatement statement) throws SQLException;
   
   public String getTestConnectionSql();
+  
+  public String getSequenceNextValueSql(String sequenceName);
+  
+  public String getGUIdSql();
+  
+  public String getCurrentTimestampSql();
 }

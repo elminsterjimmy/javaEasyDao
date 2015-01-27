@@ -18,11 +18,9 @@ public class BaseDialectResolver implements IDialectResolver {
     int databaseMajorVersion = metaData.getDatabaseMajorVersion();
 
     if ("HSQL Database Engine".equals(databaseName)) {
-      // return new HSQLDialect();
     }
 
     if ("H2".equals(databaseName)) {
-      // return new H2Dialect();
     }
 
     if ("MySQL".equals(databaseName)) {
@@ -34,11 +32,9 @@ public class BaseDialectResolver implements IDialectResolver {
     }
 
     if ("Apache Derby".equals(databaseName)) {
-      // return new DerbyDialect();
     }
 
     if ("ingres".equalsIgnoreCase(databaseName)) {
-      // return new IngresDialect();
     }
 
     if (databaseName.startsWith("Microsoft SQL Server")) {
@@ -47,15 +43,12 @@ public class BaseDialectResolver implements IDialectResolver {
 
     if ("Sybase SQL Server".equals(databaseName)
         || "Adaptive Server Enterprise".equals(databaseName)) {
-      // return new SybaseDialect();
     }
 
     if ("Informix Dynamic Server".equals(databaseName)) {
-      // return new InformixDialect();
     }
 
     if (databaseName.startsWith("DB2/")) {
-      // return new DB2Dialect();
     }
 
     if ("Oracle".equals(databaseName)) {

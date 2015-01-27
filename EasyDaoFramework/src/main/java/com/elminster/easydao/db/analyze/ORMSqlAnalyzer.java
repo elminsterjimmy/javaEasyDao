@@ -4,17 +4,16 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
 import com.elminster.easydao.db.annotation.Column;
-import com.elminster.easydao.db.annotation.Entity;
 import com.elminster.easydao.db.annotation.ColumnConverter;
+import com.elminster.easydao.db.annotation.Entity;
 import com.elminster.easydao.db.converter.IColumnNameConverter;
 import com.elminster.easydao.db.exception.SqlAnalyzeException;
-import com.elminster.easydao.db.manager.DAOSupportSession;
 
 abstract public class ORMSqlAnalyzer extends BaseSqlAnalyzer implements
     ISqlAnalyzer {
 
-  public ORMSqlAnalyzer(DAOSupportSession session) {
-    super(session);
+  public ORMSqlAnalyzer() {
+    super();
   }
 
   @Override

@@ -6,12 +6,11 @@ import com.elminster.common.util.ReflectUtil;
 import com.elminster.easydao.db.analyze.data.SqlStatementInfo.SqlType;
 import com.elminster.easydao.db.annotation.util.AnnotationUtil;
 import com.elminster.easydao.db.exception.SqlAnalyzeException;
-import com.elminster.easydao.db.manager.DAOSupportSession;
 
 public class ORMModifyAnalyzer extends ORMSqlAnalyzer {
 
-  public ORMModifyAnalyzer(DAOSupportSession session) {
-    super(session);
+  public ORMModifyAnalyzer() {
+    super();
   }
 
   @Override

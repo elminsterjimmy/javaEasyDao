@@ -1,7 +1,6 @@
 package com.elminster.easydao.db.executor;
 
 import com.elminster.easydao.db.analyze.data.SqlStatementInfo;
-import com.elminster.easydao.db.manager.DAOSupportSession;
 
 public class DefaultSqlExecutorFactory implements ISqlExecutorFactory {
 
@@ -13,9 +12,9 @@ public class DefaultSqlExecutorFactory implements ISqlExecutorFactory {
 		return instance;
 	}
 	
-	public ISqlExecutor getSQLExecutor(SqlStatementInfo sqlStatementInfo, DAOSupportSession session) {
+	public ISqlExecutor getSQLExecutor(SqlStatementInfo sqlStatementInfo) {
 		ISqlExecutor executor = null;
-		executor = new SqlExecutor(session);
+		executor = new SqlExecutor();
 		return executor;
 	}
 }

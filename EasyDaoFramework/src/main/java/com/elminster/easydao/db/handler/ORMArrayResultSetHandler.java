@@ -6,9 +6,9 @@ import java.util.List;
 import com.elminster.common.util.CollectionUtil;
 import com.elminster.common.util.ObjectUtil;
 
-public class ArrayResultSetHandler extends ResultSetHandler implements IResultSetHandler {
+public class ORMArrayResultSetHandler extends ORMResultSetHandler implements IResultSetHandler {
 
-	public ArrayResultSetHandler(Class<?> mappingClass) {
+	public ORMArrayResultSetHandler(Class<?> mappingClass) {
 		super(mappingClass);
 	}
 

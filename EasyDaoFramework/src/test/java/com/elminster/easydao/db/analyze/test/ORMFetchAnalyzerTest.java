@@ -19,7 +19,7 @@ import com.elminster.easydao.db.annotation.Entity;
 import com.elminster.easydao.db.annotation.Key;
 import com.elminster.easydao.db.annotation.KeyPolicy;
 
-public class ORMFetchAnalyzerTest {
+public class ORMFetchAnalyzerTest extends AnalyzeTestBase {
 
 	@Test
 	public void testNormalPolicy() throws Exception {
@@ -29,7 +29,7 @@ public class ORMFetchAnalyzerTest {
 		
 		Method invokedMethod = ReflectUtil.getDeclaredMethod(TestDAO.class, "delete", new Object[] {entry});
 		
-		ORMFetchAnalyzer analyzer = new ORMFetchAnalyzer(new TestDummySession());
+		ORMFetchAnalyzer analyzer = new ORMFetchAnalyzer();
 		SqlStatementInfo sqlStatementInfo = analyzer.parser(invokedMethod, entry);
 		Assert.assertEquals("SELECT id, name, pass, account FROM T_TEST WHERE id = ? AND pass = ?", sqlStatementInfo.getAnalyzedSqlStatement());
 		
@@ -51,7 +51,7 @@ public class ORMFetchAnalyzerTest {
 		
 		Method invokedMethod = ReflectUtil.getDeclaredMethod(TestDAO.class, "delete", new Object[] {entry});
 		
-		ORMModifyAnalyzer analyzer = new ORMModifyAnalyzer(new TestDummySession());
+		ORMModifyAnalyzer analyzer = new ORMModifyAnalyzer();
 		SqlStatementInfo sqlStatementInfo = analyzer.parser(invokedMethod, entry);
 		Assert.assertEquals("UPDATE T_TEST SET pass = ? , account = ? WHERE id = ? AND name = ?", sqlStatementInfo.getAnalyzedSqlStatement());
 		

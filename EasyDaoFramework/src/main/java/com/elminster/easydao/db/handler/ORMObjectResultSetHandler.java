@@ -5,10 +5,10 @@ import java.util.List;
 
 import com.elminster.common.util.CollectionUtil;
 
-public class ObjectResultSetHandler extends ResultSetHandler implements IResultSetHandler {
+public class ORMObjectResultSetHandler extends ORMResultSetHandler implements IResultSetHandler {
 
 
-	public ObjectResultSetHandler(Class<?> mappingClass) {
+	public ORMObjectResultSetHandler(Class<?> mappingClass) {
 		super(mappingClass);
 	}
 
