@@ -10,6 +10,12 @@ import com.elminster.common.constants.Constants.StringConstants;
 import com.elminster.common.util.FileUtil;
 import com.elminster.easydao.data.ClassData;
 
+/**
+ * The Service generator.
+ * 
+ * @author jgu
+ * @version 1.0
+ */
 public class ServiceGenerator {
 
   private static final String IMPORT = "import ";

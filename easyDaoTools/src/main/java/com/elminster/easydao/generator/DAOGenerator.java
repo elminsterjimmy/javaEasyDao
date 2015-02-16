@@ -9,6 +9,12 @@ import org.apache.commons.logging.LogFactory;
 import com.elminster.common.util.FileUtil;
 import com.elminster.easydao.data.ClassData;
 
+/**
+ * The DAO generator.
+ * 
+ * @author jgu
+ * @version 1.0
+ */
 public class DAOGenerator {
 
   private static final String DAO_TEMPLATE = "DAO.template";

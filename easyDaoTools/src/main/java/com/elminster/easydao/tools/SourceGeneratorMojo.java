@@ -15,6 +15,8 @@ import javax.sql.DataSource;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugins.annotations.Execute;
+import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 
@@ -34,12 +36,13 @@ import com.elminster.easydao.generator.EntityGenerator;
 import com.elminster.easydao.generator.ServiceGenerator;
 
 /**
- * The source generate mojo for EasyDAO framework.
+ * The source generate mojo for EasyDAO framework. @Mojo(name="easyDAOSourceGenerator")
  * 
  * @author jgu
  * @version 1.0
  */
-@Mojo(name="easyDAOSourceGenerator")
+@Mojo(name="easyDAOSourceGenerate")
+@Execute(goal="easyDAOSourceGenerate", phase=LifecyclePhase.GENERATE_SOURCES)
 public class SourceGeneratorMojo extends AbstractMojo {
 
   private static final DataSourceFactory dsFactory = DataSourceFactory.INSTANCE;
@@ -57,7 +60,7 @@ public class SourceGeneratorMojo extends AbstractMojo {
   private boolean overrideExist;
 
   @Parameter
-  private String propertiesName;
+  private String dbPropertyPath;
 
   @Override
   public void execute() throws MojoExecutionException, MojoFailureException {
@@ -119,7 +122,7 @@ public class SourceGeneratorMojo extends AbstractMojo {
   private DataSource getDataSource() {
     DataSource ds = null;
     Properties properties = new Properties();
-    File f = new File("./" + propertiesName);
+    File f = new File("./" + dbPropertyPath);
     InputStream is = null;
     try {
       is = new FileInputStream(f);
@@ -142,7 +145,7 @@ public class SourceGeneratorMojo extends AbstractMojo {
 
   private void writeClass(ClassData classData) throws IOException {
     String path = classData.getFullName();
-    path = srcDirectory + path.replaceAll(RegexConstants.REGEX_DOT, StringConstants.SLASH) + ".java";
+    path = FileUtil.fixFolderName(srcDirectory) + path.replaceAll(RegexConstants.REGEX_DOT, StringConstants.SLASH) + ".java";
     FileUtil.createFolder(path);
     FileUtil.write2file(classData.getContent().getBytes(), path, overrideExist);
   }

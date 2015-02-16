@@ -14,8 +14,13 @@ import org.junit.Test;
 import com.elminster.common.constants.Constants.StringConstants;
 import com.elminster.common.constants.RegexConstants;
 import com.elminster.common.util.FileUtil;
+import com.elminster.common.util.StringUtil;
 import com.elminster.easydao.data.ClassData;
 import com.elminster.easydao.db.ds.DataSourceFactory;
+import com.elminster.easydao.db.manager.DAOSupportSession;
+import com.elminster.easydao.db.manager.DAOSupportSessionFactory;
+import com.elminster.easydao.db.manager.DAOSupportSessionFactoryManager;
+import com.elminster.easydao.db.query.IQuery;
 import com.elminster.easydao.db.schema.CollectSchemaException;
 import com.elminster.easydao.db.schema.ITable;
 import com.elminster.easydao.db.schema.SchemaReader;
@@ -26,19 +31,35 @@ import com.elminster.easydao.generator.EntityGenerator;
 import com.elminster.easydao.generator.ServiceGenerator;
 
 public class GeneratorTest {
-  
+
   static DataSource ds;
-  
+
   static final String TEST_GENERATE = "src/test/generated/";
-  
+
   @BeforeClass
-  public static void setup() throws IOException {
+  public static void setup() throws IOException, SQLException {
     DataSourceFactory dsFactory = DataSourceFactory.INSTANCE;
     Properties properties = new Properties();
     properties.load(GeneratorTest.class.getResourceAsStream("/DataSource.properties"));
     ds = dsFactory.getDataSource(properties);
+    DAOSupportSessionFactory sessionFactory = new DAOSupportSessionFactory(ds);
+    DAOSupportSessionFactoryManager.getSessionManager().putSessionFactory(sessionFactory);
+    DAOSupportSession session = sessionFactory.popDAOSupportSession();
+    try {
+      IQuery query = session.getQuery();
+      String stmt = FileUtil.readFile2String(GeneratorTest.class.getResourceAsStream("/CreateTestDB.sql"));
+      stmt = StringUtil.chomp(stmt);
+      String[] sqls = stmt.split(StringConstants.SEMICOLON);
+      for (String sql : sqls) {
+        if (StringUtil.isNotEmpty(sql)) {
+          query.sqlExecNoResult(sql);
+        }
+      }
+    } finally {
+      sessionFactory.pushDAOSupportSession(session);
+    }
   }
-  
+
   @Test
   public void testGenerate() throws SQLException, CollectSchemaException, UnknownTypeException, IOException {
     String basePackage = "com.elminster.easydao.tools.test";
@@ -69,10 +90,10 @@ public class GeneratorTest {
     classDatas.add(dtoClassData);
     ClassData serviceIfClassData = serviceGenerator.generateServiceIf(dtoClassData, serviceIfPackage);
     classDatas.add(serviceIfClassData);
-    ClassData serviceImplClassData = serviceGenerator.generateServiceImpl(entityClassData, dtoClassData,
-        daoClassData, serviceExceptionClassData, serviceIfClassData, serviceImplPackage);
+    ClassData serviceImplClassData = serviceGenerator.generateServiceImpl(entityClassData, dtoClassData, daoClassData,
+        serviceExceptionClassData, serviceIfClassData, serviceImplPackage);
     classDatas.add(serviceImplClassData);
-    for (ClassData classData: classDatas) {
+    for (ClassData classData : classDatas) {
       writeClass(classData);
     }
   }

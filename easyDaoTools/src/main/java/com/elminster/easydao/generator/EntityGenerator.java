@@ -21,6 +21,12 @@ import com.elminster.easydao.db.util.JavaSqlTypeMap;
 import com.elminster.easydao.exception.UnknownTypeException;
 import com.elminster.easydao.util.Utils;
 
+/**
+ * The Entity generator.
+ * 
+ * @author jgu
+ * @version 1.0
+ */
 public class EntityGenerator {
 
   public static final String INDENT = "  ";

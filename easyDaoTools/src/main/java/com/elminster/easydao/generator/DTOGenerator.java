@@ -5,6 +5,12 @@ import org.apache.commons.logging.LogFactory;
 
 import com.elminster.easydao.data.ClassData;
 
+/**
+ * The DTO generator.
+ * 
+ * @author jgu
+ * @version 1.0
+ */
 public class DTOGenerator {
 
   private static final Log logger = LogFactory.getLog(DTOGenerator.class);

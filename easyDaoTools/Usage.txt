@@ -1,0 +1,48 @@
+Usage of the EasyDAO source generate tool (easydao-tools-maven-plugin):
+
+The sample maven setting to use the source generate plugin:
+
+<plugin>
+    <groupId>com.elminster</groupId>
+    <artifactId>easydao-tools-maven-plugin</artifactId>
+    <version>1.120.0-SNAPSHOT</version>
+    <executions>
+      <execution>
+        <goals>
+          <goal>easyDAOSourceGenerate</goal>
+        </goals>
+        <phase>generate-sources</phase>
+        <configuration>
+          <srcDirectory>${project.build.sourceDirectory}</srcDirectory>
+          <basePackage>com.elminster.test</basePackage>
+          <dbPropertyPath>resources/db.properties</dbPropertyPath>
+          <dbTableNames>
+            <dbTableName>testtable</dbTableName>
+            <dbTableName>t_game_info</dbTableName>
+          </dbTableNames>
+          <overrideExist>true</overrideExist>
+        </configuration>
+      </execution>
+    </executions>
+    <dependencies>
+      <dependency>
+        <groupId>mysql</groupId>
+        <artifactId>mysql-connector-java</artifactId>
+        <version>5.1.34</version>
+      </dependency>
+    </dependencies>
+  </plugin>
+</plugins>
+
+The "sourceDirectory" indicates the source directory you wanna generate to.
+The "basePackage" indicates the the base package you wanna generate the sources.
+The "dbPropertyPath" points to a datasource setting file, you will get an example setting file below.
+The "dbTableNames" indicates the tables you wanna use for generating the sources.
+The "overrideExist" controls whether the generated sources will override the exist sources.
+
+The sample for datasource setting file:
+
+ds.driverClassName=com.mysql.jdbc.Driver
+ds.url=jdbc:mysql://localhost:3306/test
+ds.username=root
+ds.password=root
