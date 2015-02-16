@@ -9,4 +9,3 @@ CREATE TABLE testtable
     tel VARCHAR(50),
     last_update TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
-

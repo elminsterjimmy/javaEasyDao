@@ -1,0 +1,12 @@
+package {0};
+
+import com.elminster.easydao.db.annotation.Column;
+import com.elminster.easydao.db.annotation.Entity;
+import com.elminster.easydao.db.annotation.Key;
+{4}
+
+@Entity(tableName="{1}")
+public class {2} '{'
+
+{3}
+'}'

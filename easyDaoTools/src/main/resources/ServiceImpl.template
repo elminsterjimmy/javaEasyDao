@@ -1,0 +1,67 @@
+package {0};
+
+import java.util.ArrayList;
+import java.util.List;
+
+import com.elminster.common.util.CollectionUtil;
+import com.elminster.common.util.ObjectUtil;
+{1}
+public class {2} implements {3} '{'
+
+  private {4} dao;
+  
+  public void setDao({4} dao) '{'
+    this.dao = dao;
+  '}'
+
+  public int insert({5} condition) throws ServiceException '{'
+    {6} entity = new {6}();
+    try '{'
+      entity = ({6}) ObjectUtil.copyProperties(condition, entity);
+    '}' catch (Exception e) '{'
+      throw new ServiceException(e);
+    '}'
+    return dao.insert(entity);
+  '}'
+  
+  public void update({5} condition) throws ServiceException '{'
+    {6} entity = new {6}();
+    try '{'
+      entity = ({6}) ObjectUtil.copyProperties(condition, entity);
+    '}' catch (Exception e) '{'
+      throw new ServiceException(e);
+    '}'
+    dao.update(entity);
+  '}'
+  
+  public void delete({5} condition) throws ServiceException '{'
+    {6} entity = new {6}();
+    try '{'
+      entity = ({6}) ObjectUtil.copyProperties(condition, entity);
+    '}' catch (Exception e) '{'
+      throw new ServiceException(e);
+    '}'
+    dao.delete(entity);
+  '}'
+  
+  public List<{5}> fetch({5} condition) throws ServiceException '{'
+    List<{5}> result = new ArrayList<{5}>();
+    {6} entity = new {6}();
+    try '{'
+      entity = ({6}) ObjectUtil.copyProperties(condition, entity);
+    '}' catch (Exception e) '{'
+      throw new ServiceException(e);
+    '}'
+    List<{6}> entities = dao.fetch(entity);
+    try '{'
+      if (CollectionUtil.isNotEmpty(entities)) '{'
+        {5} data = new {5}();
+        condition = ({5}) ObjectUtil.copyProperties(entity, data);
+        result.add(data);
+      '}'
+    '}' catch (Exception e) '{'
+      throw new ServiceException(e);
+    '}'
+    return result;
+  '}'
+'}'

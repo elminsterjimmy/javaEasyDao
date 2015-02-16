@@ -1,0 +1,9 @@
+setMethod={0}public void set{1}({2} {3}) '{'\n\
+{0}{0}this.{3} = {3};\n\
+{0}'}'\n
+getMethod={0}public {2} get{1}() '{'\n\
+{0}{0}return {3};\n\
+{0}'}'\n
+isMethod={0}public {2} is{1}() '{'\n\
+{0}{0}return {3};\n\
+{0}'}'\n

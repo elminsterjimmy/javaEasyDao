@@ -1,0 +1,7 @@
+package {0};
+
+import {1};
+
+public interface {2} extends BaseService<{3}> '{'
+
+'}'

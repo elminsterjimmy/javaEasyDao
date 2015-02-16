@@ -1,0 +1,2 @@
+entityFiledDef={0}@Column\n{0}private {1} {2};\n
+dtoFileDef={0}private {1} {2};\n
