@@ -1,4 +1,4 @@
-package com.elminster.easydao.db.manager;
+package com.elminster.easydao.db.session;
 
 import java.sql.SQLException;
 import java.util.HashMap;
@@ -14,18 +14,20 @@ import org.apache.commons.logging.LogFactory;
 
 import com.elminster.easydao.db.config.BaseConfiguration;
 import com.elminster.easydao.db.config.IConfiguration;
+import com.elminster.easydao.id.IdGenerator;
+import com.elminster.easydao.id.internal.InternalIdGenerator;
 
 public class DAOSupportSessionFactory {
 
   private Log logger = LogFactory.getLog(DAOSupportSessionFactory.class);
   
   private String factoryId;
-
-  private static int nextSessionId = 0;
-
+  
+  private static final IdGenerator sessionIdGenerator = new InternalIdGenerator();
+  
   private LinkedList<DAOSupportSession> freeSessions = new LinkedList<DAOSupportSession>();
 
-  private Map<Integer, DAOSupportSession> usedSessions = new HashMap<Integer, DAOSupportSession>();
+  private Map<Long, DAOSupportSession> usedSessions = new HashMap<Long, DAOSupportSession>();
   
   private IConfiguration configuraton;
 
@@ -46,6 +48,7 @@ public class DAOSupportSessionFactory {
     do {
       try {
         session = freeSessions.removeLast();
+        session.update();
       } catch (NoSuchElementException nse) {
         createNewSession();
         session = freeSessions.removeLast();
@@ -58,25 +61,26 @@ public class DAOSupportSessionFactory {
 
   public synchronized void pushDAOSupportSession(DAOSupportSession session)
       throws SQLException {
+    session.clearup();
     usedSessions.remove(session.getId());
     freeSessions.add(session);
     ThreadSessionMap.INSTANCE.removeSessionPerThread(Thread.currentThread(), session);
   }
 
-  public boolean clearFreeSession() {
+  public boolean clearFreeSession() throws SQLException {
     if (!freeSessions.isEmpty()) {
       DAOSupportSession session = freeSessions.removeLast();
-      session.clearup();
+      session.close();
       return true;
     } else {
       return false;
     }
   }
   
-  private boolean testOrCloseConnection(DAOSupportSession session) {
+  private boolean testOrCloseConnection(DAOSupportSession session) throws SQLException {
     boolean rst = session.testConnection();
     if (!rst) {
-      session.clearup();
+      session.close();
     }
     return rst;
   }
@@ -84,18 +88,18 @@ public class DAOSupportSessionFactory {
   private void createNewSession() throws SQLException {
     DAOSupportSession session = new DAOSupportSession();
     session.setConnection(ds.getConnection());
-    session.setId(++nextSessionId);
+    session.setId((Long)sessionIdGenerator.nextId());
     session.setConfiguraton(configuraton);
     freeSessions.add(session);
   }
 
-  public void shutdown() {
+  public void shutdown() throws SQLException {
     if (!usedSessions.isEmpty()) {
       logger.warn("some sessions are still used:");
-      for (Integer id : usedSessions.keySet()) {
+      for (Long id : usedSessions.keySet()) {
         DAOSupportSession session = usedSessions.remove(id);
         logger.warn("session " + session.getId());
-        session.clearup();
+        session.close();
       }
     }
     while (clearFreeSession())

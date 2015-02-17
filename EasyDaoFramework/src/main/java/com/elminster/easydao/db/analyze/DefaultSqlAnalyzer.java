@@ -8,7 +8,9 @@ import java.io.InputStreamReader;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.mail.internet.ParseException;
@@ -59,7 +61,10 @@ public class DefaultSqlAnalyzer extends BaseSqlAnalyzer implements ISqlAnalyzer 
    *          the method's argument(s)
    * @throws Exception
    */
-  public void analyzeSql(Method invokedMethod, Object... methodArguments) throws Exception {
+  public AnalyzedSqlData analyzeSql(Method invokedMethod, Object... methodArguments) throws Exception {
+    AnalyzedSqlData data = new AnalyzedSqlData();
+    String analyzedSql;
+    List<Object> analyzedSqlParameters = new ArrayList<Object>();
     String originalSql = getOriginalSql(invokedMethod);
     // get all SqlParam annotation(s)
     Annotation[][] parametersAnnos = invokedMethod.getParameterAnnotations();
@@ -122,6 +127,9 @@ public class DefaultSqlAnalyzer extends BaseSqlAnalyzer implements ISqlAnalyzer 
       }
       analyzedSql = analyzedSql.replaceFirst(PARAM_KEY_REGEX + replaceKey, SQL_REPLACEMENT);
     }
+    data.setAnalyzedSql(analyzedSql);
+    data.setAnalyzedSqlParameters(analyzedSqlParameters);
+    return data;
   }
 
   /**
@@ -182,7 +190,7 @@ public class DefaultSqlAnalyzer extends BaseSqlAnalyzer implements ISqlAnalyzer 
     BufferedReader bReader = null;
     StringBuilder sb = new StringBuilder();
     try {
-      is = originalClass.getResourceAsStream(fileName);
+      is = this.getClass().getClassLoader().getResourceAsStream(fileName);
       isReader = new InputStreamReader(is);
       bReader = new BufferedReader(isReader);
       String line = null;

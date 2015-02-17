@@ -1,5 +1,6 @@
 package com.elminster.easydao.test;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -7,24 +8,27 @@ import java.util.Properties;
 
 import javax.sql.DataSource;
 
-import junit.framework.Assert;
-
 import org.apache.log4j.xml.DOMConfigurator;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.BeforeClass;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 
 import com.elminster.common.constants.Constants.StringConstants;
 import com.elminster.common.util.FileUtil;
 import com.elminster.common.util.StringUtil;
 import com.elminster.easydao.db.analyze.data.PagedData;
+import com.elminster.easydao.db.dao.DAOSupportManager;
 import com.elminster.easydao.db.ds.DataSourceFactory;
-import com.elminster.easydao.db.manager.DAOSupportManager;
-import com.elminster.easydao.db.manager.DAOSupportSession;
-import com.elminster.easydao.db.manager.DAOSupportSessionFactory;
-import com.elminster.easydao.db.manager.DAOSupportSessionFactoryManager;
 import com.elminster.easydao.db.query.IQuery;
+import com.elminster.easydao.db.session.DAOSupportSession;
+import com.elminster.easydao.db.session.DAOSupportSessionFactory;
+import com.elminster.easydao.db.session.DAOSupportSessionFactoryManager;
+import com.elminster.easydao.db.transaction.TransactionTemplate;
 
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EasyDaoTest {
 
   private static String factoryId;
@@ -58,35 +62,39 @@ public class EasyDaoTest {
   }
 
   @AfterClass
-  public static void finalized() {
+  public static void finalized() throws SQLException {
     DAOSupportSessionFactoryManager.getSessionManager()
         .getSessionFactory(factoryId).shutdown();
   }
 
   @Test
-  public void testORMInsert() throws Exception {
+  public void test1ORMInsert() throws Exception {
     DAOSupportSessionFactory factory = DAOSupportSessionFactoryManager
         .getSessionManager().getSessionFactory(factoryId);
     DAOSupportSession session = factory.popDAOSupportSession();
     try {
-      DAOSupportManager manager = DAOSupportManager.INSTANCE;
-      TestDao dao = (TestDao) manager.getDAO(TestDao.class);
-      session.beginTransaction();
-      for (int i = 1; i <= 5; i++) {
-        ORMBean condition = new ORMBean();
-        condition.setAccount(Math.pow(-1, i) * 1021.5d);
-        Date now = new Date();
-        condition.setLastUpdate(new java.sql.Date(now.getTime()));
-        condition.setName("user" + i);
-        condition.setPass("ps" + i);
-        condition.setQuary(i);
-        List<Integer> list = new ArrayList<Integer>();
-        list.add(12345678);
-        list.add(23456789);
-        condition.setTel(list);
-        dao.insert(condition);
-      }
-      session.endTransaction();
+      new TransactionTemplate() {
+
+        @Override
+        public void doTransaction(DAOSupportSession session) throws Exception {
+          DAOSupportManager manager = DAOSupportManager.INSTANCE;
+          TestDao dao = (TestDao) manager.getDAO(TestDao.class);
+          for (int i = 1; i <= 5; i++) {
+            ORMBean condition = new ORMBean();
+            condition.setAccount(Math.pow(-1, i) * 1021.5d);
+            Date now = new Date();
+            condition.setLastUpdate(new java.sql.Date(now.getTime()));
+            condition.setName("user" + i);
+            condition.setPass("ps" + i);
+            condition.setQuary(i);
+            List<Integer> list = new ArrayList<Integer>();
+            list.add(12345678);
+            list.add(23456789);
+            condition.setTel(list);
+            dao.insert(condition);
+          }
+        }
+      }.workWithTransaction(session);
     } finally {
       factory.pushDAOSupportSession(session);
     }
@@ -94,7 +102,7 @@ public class EasyDaoTest {
   }
 
   @Test
-  public void testORMFetch() throws Exception {
+  public void test2ORMFetch() throws Exception {
     DAOSupportSessionFactory factory = DAOSupportSessionFactoryManager
         .getSessionManager().getSessionFactory(factoryId);
     DAOSupportSession session = factory.popDAOSupportSession();
@@ -112,7 +120,7 @@ public class EasyDaoTest {
   }
 
   @Test
-  public void testORMUpdate() throws Exception {
+  public void test3ORMUpdate() throws Exception {
     DAOSupportSessionFactory factory = DAOSupportSessionFactoryManager
         .getSessionManager().getSessionFactory(factoryId);
     DAOSupportSession session = factory.popDAOSupportSession();
@@ -135,7 +143,7 @@ public class EasyDaoTest {
   }
 
   @Test
-  public void testORMDelete() throws Exception {
+  public void test4ORMDelete() throws Exception {
     DAOSupportSessionFactory factory = DAOSupportSessionFactoryManager
         .getSessionManager().getSessionFactory(factoryId);
     DAOSupportSession session = factory.popDAOSupportSession();
@@ -152,7 +160,7 @@ public class EasyDaoTest {
   }
 
   @Test
-  public void testSqlStatement() throws Exception {
+  public void test5SqlStatement() throws Exception {
     DAOSupportSessionFactory factory = DAOSupportSessionFactoryManager
         .getSessionManager().getSessionFactory(factoryId);
     DAOSupportSession session = factory.popDAOSupportSession();
@@ -172,7 +180,7 @@ public class EasyDaoTest {
   }
 
   @Test
-  public void testSqlFile() throws Exception {
+  public void test6SqlFile() throws Exception {
     DAOSupportSessionFactory factory = DAOSupportSessionFactoryManager
         .getSessionManager().getSessionFactory(factoryId);
     DAOSupportSession session = factory.popDAOSupportSession();
@@ -180,7 +188,7 @@ public class EasyDaoTest {
       DAOSupportManager manager = DAOSupportManager.INSTANCE;
       TestDao dao = (TestDao) manager.getDAO(TestDao.class);
       Double acc = dao.getAccountByUserName("user1");
-      Assert.assertEquals(-1021.5, acc);
+      Assert.assertEquals(Double.valueOf(-1021.5), acc);
       ORMBean bean = new ORMBean();
       bean.setName("user2");
       List<Integer> list = new ArrayList<Integer>();
@@ -188,7 +196,7 @@ public class EasyDaoTest {
       list.add(23456789);
       bean.setTel(list);
       Double acc2 = dao.getAccountByBean(bean);
-      Assert.assertEquals(1021.5, acc2);
+      Assert.assertEquals(Double.valueOf(1021.5), acc2);
     } finally {
       factory.pushDAOSupportSession(session);
     }
@@ -196,17 +204,17 @@ public class EasyDaoTest {
   }
 
   @Test
-  public void testExpression1() throws Exception {
+  public void test7SqlExpression1() throws Exception {
     DAOSupportSessionFactory factory = DAOSupportSessionFactoryManager
         .getSessionManager().getSessionFactory(factoryId);
     DAOSupportSession session = factory.popDAOSupportSession();
     try {
       DAOSupportManager manager = DAOSupportManager.INSTANCE;
       TestDao dao = (TestDao) manager.getDAO(TestDao.class);
-      double acc = dao.getAccountByCondition(1);
-      Assert.assertEquals(-1021.5, acc);
+      Double acc = dao.getAccountByCondition(1);
+      Assert.assertEquals(Double.valueOf(-1021.5), acc);
       acc = dao.getAccountByCondition(-1);
-      Assert.assertEquals(1021.5, acc);
+      Assert.assertEquals(Double.valueOf(1021.5), acc);
     } finally {
       factory.pushDAOSupportSession(session);
     }
@@ -214,7 +222,7 @@ public class EasyDaoTest {
   }
 
   @Test
-  public void testExpression2() throws Exception {
+  public void test8SqlExpression2() throws Exception {
     DAOSupportSessionFactory factory = DAOSupportSessionFactoryManager
         .getSessionManager().getSessionFactory(factoryId);
     DAOSupportSession session = factory.popDAOSupportSession();
@@ -223,11 +231,11 @@ public class EasyDaoTest {
       TestDao dao = (TestDao) manager.getDAO(TestDao.class);
       ORMBean bean = new ORMBean();
       bean.setName("user1");
-      double acc = dao.getAccountByBeanCondition(bean);
-      Assert.assertEquals(-1021.5, acc);
+      Double acc = dao.getAccountByBeanCondition(bean);
+      Assert.assertEquals(Double.valueOf(-1021.5), acc);
       bean.setName("user2");
       acc = dao.getAccountByBeanCondition(bean);
-      Assert.assertEquals(1021.5, acc);
+      Assert.assertEquals(Double.valueOf(1021.5), acc);
     } finally {
       factory.pushDAOSupportSession(session);
     }

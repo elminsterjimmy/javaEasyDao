@@ -17,22 +17,24 @@ abstract public class ORMSqlAnalyzer extends BaseSqlAnalyzer implements
   }
 
   @Override
-  public void analyzeSql(Method invokedMethod, Object... methodArguments) {
+  public AnalyzedSqlData analyzeSql(Method invokedMethod, Object... methodArguments) {
+    AnalyzedSqlData data = null;
     boolean hasEntry = false;
     for (Object obj : methodArguments) {
       if (null == obj.getClass().getAnnotation(Entity.class)) {
         continue;
       }
       hasEntry = true;
-      mapping(obj);
+      data = mapping(obj);
       break;
     }
     if (!hasEntry) {
       throw new SqlAnalyzeException("No Entiry defined.");
     }
+    return data;
   }
 
-  abstract protected void mapping(Object obj);
+  abstract protected AnalyzedSqlData mapping(Object obj);
 
   protected String getTableName(Object obj) {
     Entity entry = obj.getClass().getAnnotation(Entity.class);

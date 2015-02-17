@@ -1,4 +1,4 @@
-package com.elminster.easydao.db.manager;
+package com.elminster.easydao.db.session;
 
 import java.util.HashMap;
 import java.util.List;

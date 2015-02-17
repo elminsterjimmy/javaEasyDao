@@ -1,7 +1,8 @@
 package com.elminster.easydao.db.analyze;
 
 import java.lang.reflect.Field;
-import java.util.UUID;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.elminster.common.util.ReflectUtil;
 import com.elminster.common.util.StringUtil;
@@ -12,6 +13,9 @@ import com.elminster.easydao.db.annotation.Key;
 import com.elminster.easydao.db.annotation.KeyPolicy;
 import com.elminster.easydao.db.annotation.util.AnnotationUtil;
 import com.elminster.easydao.db.exception.SqlAnalyzeException;
+import com.elminster.easydao.id.IdGeneratorManager;
+import com.elminster.easydao.id.IdGeneratorNotFoundException;
+import com.elminster.easydao.id.UUIDGenerator;
 
 public class ORMInsertAnalyzer extends ORMSqlAnalyzer {
 
@@ -20,12 +24,12 @@ public class ORMInsertAnalyzer extends ORMSqlAnalyzer {
   }
 
   @Override
-  public SqlType getSqlType() {
+  public SqlType getSqlType(String s) {
     return SqlType.UPDATE;
   }
 
   @Override
-  protected void mapping(Object obj) {
+  protected AnalyzedSqlData mapping(Object obj) {
     StringBuilder builder = new StringBuilder();
 
     builder.append("INSERT INTO ");
@@ -33,6 +37,7 @@ public class ORMInsertAnalyzer extends ORMSqlAnalyzer {
     builder.append(" (");
     Field[] fields = ReflectUtil.getAllField(obj.getClass());
     boolean first = true;
+    List<Object> analyzedSqlParameters = new ArrayList<Object>();
     for (int i = 0; i < fields.length; i++) {
       Object generatedValue = null;
       Field field = fields[i];
@@ -43,7 +48,11 @@ public class ORMInsertAnalyzer extends ORMSqlAnalyzer {
         if (KeyPolicy.AUTO_INC_POLICY == keyPolicy) {
           continue;
         } else if (KeyPolicy.UUID_POLICY == keyPolicy) {
-          generatedValue = UUID.randomUUID().toString();
+          try {
+            generatedValue = IdGeneratorManager.INSTANCE.getIdGenerator(UUIDGenerator.class.getName()).nextId();
+          } catch (IdGeneratorNotFoundException e) {
+            throw new SqlAnalyzeException("UUID Id Generator not found.");
+          }
         } else if (KeyPolicy.SEQUENCE_POLICY == keyPolicy) {
           String sequenceName = key.sequenceName();
           if (StringUtil.isEmpty(sequenceName)) {
@@ -52,6 +61,16 @@ public class ORMInsertAnalyzer extends ORMSqlAnalyzer {
           generatedValue = new SeqenceSelectValue(getDialect(), sequenceName);;
         } else if (KeyPolicy.GUID_POLICY == keyPolicy) {
           generatedValue = new GUIDSelectValue(getDialect());
+        } else if (KeyPolicy.CUSTOM_ID_POLICY == keyPolicy) {
+          String customIdGeneratorClass = key.customIdGeneratorClass();
+          if (StringUtil.isEmpty(customIdGeneratorClass)) {
+            throw new SqlAnalyzeException("Custom Id Generator is required for CUSTOM_ID_POLICY key.");
+          }
+          try {
+            generatedValue = IdGeneratorManager.INSTANCE.getIdGenerator(customIdGeneratorClass).nextId();
+          } catch (IdGeneratorNotFoundException e) {
+            throw new SqlAnalyzeException("Custom Id Generator not found.", e);
+          }
         }
       }
       if (AnnotationUtil.isColumn(field)) {
@@ -69,7 +88,7 @@ public class ORMInsertAnalyzer extends ORMSqlAnalyzer {
             value = ReflectUtil.getFieldValue(obj, field);
             value = AnnotationUtil.getCustomerDBValue(field, value);
           }
-          analyzedSqlParameters.add(value);
+          analyzedSqlParameters .add(value);
         } catch (IllegalArgumentException e) {
           throw new SqlAnalyzeException(e);
         } catch (IllegalAccessException e) {
@@ -85,6 +104,10 @@ public class ORMInsertAnalyzer extends ORMSqlAnalyzer {
       builder.append("?");
     }
     builder.append(")");
-    analyzedSql = builder.toString();
+    String analyzedSql = builder.toString();
+    AnalyzedSqlData data = new AnalyzedSqlData();
+    data.setAnalyzedSql(analyzedSql);
+    data.setAnalyzedSqlParameters(analyzedSqlParameters);
+    return data;
   }
 }

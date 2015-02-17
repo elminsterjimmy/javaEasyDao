@@ -1,6 +1,8 @@
 package com.elminster.easydao.db.analyze;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.elminster.common.util.ReflectUtil;
 import com.elminster.easydao.db.analyze.data.SqlStatementInfo.SqlType;
@@ -14,18 +16,19 @@ public class ORMDeleteAnalyzer extends ORMSqlAnalyzer {
   }
 
   @Override
-  protected SqlType getSqlType() {
+  protected SqlType getSqlType(String s) {
     return SqlType.UPDATE;
   }
 
   @Override
-  protected void mapping(Object obj) {
+  protected AnalyzedSqlData mapping(Object obj) {
     StringBuilder builder = new StringBuilder();
 
     builder.append("DELETE FROM ");
     builder.append(getTableName(obj));
     Field[] fields = ReflectUtil.getAllField(obj.getClass());
     boolean first = true;
+    List<Object> analyzedSqlParameters = new ArrayList<Object>();
     for (int i = 0; i < fields.length; i++) {
       Field field = fields[i];
       if (AnnotationUtil.isKey(field)) {
@@ -48,12 +51,16 @@ public class ORMDeleteAnalyzer extends ORMSqlAnalyzer {
             }
             builder.append(getColumnName(field, getColumnConverter(obj)));
             builder.append(" = ?");
-            analyzedSqlParameters.add(value);
+            analyzedSqlParameters .add(value);
           }
 
         }
       }
     }
-    analyzedSql = builder.toString();
+    String analyzedSql = builder.toString();
+    AnalyzedSqlData data = new AnalyzedSqlData();
+    data.setAnalyzedSql(analyzedSql);
+    data.setAnalyzedSqlParameters(analyzedSqlParameters);
+    return data;
   }
 }

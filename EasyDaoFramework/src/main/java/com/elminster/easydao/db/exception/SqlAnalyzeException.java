@@ -19,4 +19,8 @@ public class SqlAnalyzeException extends RuntimeException {
 	public SqlAnalyzeException(Throwable t) {
 		super(t);
 	}
+
+  public SqlAnalyzeException(String message, Throwable cause) {
+    super(message, cause);
+  }
 }

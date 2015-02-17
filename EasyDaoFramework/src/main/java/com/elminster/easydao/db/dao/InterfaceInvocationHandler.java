@@ -1,4 +1,4 @@
-package com.elminster.easydao.db.manager;
+package com.elminster.easydao.db.dao;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;

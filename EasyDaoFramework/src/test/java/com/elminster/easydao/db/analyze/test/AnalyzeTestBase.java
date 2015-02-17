@@ -3,7 +3,7 @@ package com.elminster.easydao.db.analyze.test;
 import org.junit.After;
 import org.junit.Before;
 
-import com.elminster.easydao.db.manager.ThreadSessionMap;
+import com.elminster.easydao.db.session.ThreadSessionMap;
 
 public class AnalyzeTestBase {
   

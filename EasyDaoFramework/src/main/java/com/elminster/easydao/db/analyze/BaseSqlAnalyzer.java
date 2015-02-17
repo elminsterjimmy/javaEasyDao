@@ -1,8 +1,6 @@
 package com.elminster.easydao.db.analyze;
 
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
 
 import com.elminster.easydao.db.analyze.data.PagedData;
 import com.elminster.easydao.db.analyze.data.SqlStatementInfo;
@@ -10,14 +8,10 @@ import com.elminster.easydao.db.analyze.data.SqlStatementInfo.SqlType;
 import com.elminster.easydao.db.constants.SqlConstants;
 import com.elminster.easydao.db.dialect.Dialect;
 import com.elminster.easydao.db.dialect.IDialect;
-import com.elminster.easydao.db.manager.DAOSupportSession;
-import com.elminster.easydao.db.manager.ThreadSessionMap;
+import com.elminster.easydao.db.session.DAOSupportSession;
+import com.elminster.easydao.db.session.ThreadSessionMap;
 
 abstract public class BaseSqlAnalyzer implements ISqlAnalyzer {
-
-  protected Class<?> originalClass;
-  protected String analyzedSql;
-  protected List<Object> analyzedSqlParameters = new ArrayList<Object>();
 
   public BaseSqlAnalyzer() {
   }
@@ -51,7 +45,7 @@ abstract public class BaseSqlAnalyzer implements ISqlAnalyzer {
 
     SqlStatementInfo sqlStatementInfo = new SqlStatementInfo();
 
-    analyzeSql(invokedMethod, methodArguments);
+    AnalyzedSqlData analyzedSqlData = analyzeSql(invokedMethod, methodArguments);
 
     // paged result
     if (usePaged) {
@@ -62,22 +56,22 @@ abstract public class BaseSqlAnalyzer implements ISqlAnalyzer {
       if (dialect.supportPaged()) {
         if (pagedData.hasOffset()) {
           if (dialect.supportOffset()) {
-            analyzedSql = dialect.getLimitSql(analyzedSql, true);
-            analyzedSqlParameters.add(dialect.convertToFirstRowValue(pagedData.getStartRow()));
-            analyzedSqlParameters.add(getMaxOrLimit(pagedData, dialect));
+            analyzedSqlData.setAnalyzedSql(dialect.getLimitSql(analyzedSqlData.getAnalyzedSql(), true));
+            analyzedSqlData.addAnalyzedSqlParameter(dialect.convertToFirstRowValue(pagedData.getStartRow()));
+            analyzedSqlData.addAnalyzedSqlParameter(getMaxOrLimit(pagedData, dialect));
           } else {
             // TODO
           }
         } else {
-          analyzedSql = dialect.getLimitSql(analyzedSql, false);
-          analyzedSqlParameters.add(getMaxOrLimit(pagedData, dialect));
+          analyzedSqlData.setAnalyzedSql(dialect.getLimitSql(analyzedSqlData.getAnalyzedSql(), false));
+          analyzedSqlData.addAnalyzedSqlParameter(getMaxOrLimit(pagedData, dialect));
         }
       }
     }
 
-    sqlStatementInfo.setAnalyzedSqlStatement(analyzedSql);
-    sqlStatementInfo.setAnalyzedSqlParameters(analyzedSqlParameters);
-    sqlStatementInfo.setAnalyzedSqlType(getSqlType());
+    sqlStatementInfo.setAnalyzedSqlStatement(analyzedSqlData.getAnalyzedSql());
+    sqlStatementInfo.setAnalyzedSqlParameters(analyzedSqlData.getAnalyzedSqlParameters());
+    sqlStatementInfo.setAnalyzedSqlType(getSqlType(analyzedSqlData.getAnalyzedSql()));
     sqlStatementInfo.setUsePaged(usePaged);
     sqlStatementInfo.setPagedData(pagedData);
     return sqlStatementInfo;
@@ -112,7 +106,7 @@ abstract public class BaseSqlAnalyzer implements ISqlAnalyzer {
     return session.getDialect();
   }
 
-  abstract protected void analyzeSql(Method invokedMethod,
+  abstract protected AnalyzedSqlData analyzeSql(Method invokedMethod,
       Object... methodArguments) throws Exception;
 
   /**
@@ -120,7 +114,7 @@ abstract public class BaseSqlAnalyzer implements ISqlAnalyzer {
    * 
    * @return SQL statement type
    */
-  protected SqlType getSqlType() {
+  protected SqlType getSqlType(String analyzedSql) {
     SqlType type = null;
     if (null != analyzedSql) {
       boolean first = false;
@@ -149,15 +143,5 @@ abstract public class BaseSqlAnalyzer implements ISqlAnalyzer {
       }
     }
     return type;
-  }
-
-  @Override
-  public Class<?> getOriginalClass() {
-    return originalClass;
-  }
-
-  @Override
-  public void setOriginalClass(Class<?> orignalClass) {
-    this.originalClass = orignalClass;
   }
 }

@@ -1,4 +1,4 @@
-package com.elminster.easydao.db.manager;
+package com.elminster.easydao.db.dao;
 
 import java.lang.reflect.Proxy;
 import java.util.HashMap;
@@ -56,7 +56,7 @@ public class DAOSupportManager {
 	 * @param clazz the DAO class
 	 * @return the DAO proxy
 	 */
-	public Object getDAO(Class<?> clazz) {
+	public synchronized Object getDAO(Class<?> clazz) {
 		if (null == clazz) {
 			return null;
 		}

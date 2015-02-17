@@ -20,15 +20,4 @@ public interface ISqlAnalyzer {
 	 * @return SqlStatementInfo SQL statement information
 	 */
 	public SqlStatementInfo parser(Method invokedMethod, Object... methodArguments) throws Exception;
-	
-	/**
-	 * Get original DAO interface
-	 * @return original DAO interface
-	 */
-	public Class<?> getOriginalClass();
-	
-	/**
-   * Set original DAO interface
-   */
-	public void setOriginalClass(Class<?> originalClass);
 }

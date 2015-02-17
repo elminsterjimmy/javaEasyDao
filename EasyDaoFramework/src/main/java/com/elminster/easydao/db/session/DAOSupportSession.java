@@ -1,4 +1,4 @@
-package com.elminster.easydao.db.manager;
+package com.elminster.easydao.db.session;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -11,6 +11,7 @@ import com.elminster.easydao.db.dialect.DialectFactory;
 import com.elminster.easydao.db.dialect.IDialect;
 import com.elminster.easydao.db.query.IQuery;
 import com.elminster.easydao.db.query.Query;
+import com.elminster.easydao.db.transaction.Transaction;
 
 public class DAOSupportSession {
 
@@ -19,11 +20,16 @@ public class DAOSupportSession {
   private DialectFactory dialectFactory = DialectFactory.getFactory();
   private Connection conn;
   private IDialect dialect;
-  private int id;
+  private Long id;
   private IConfiguration config;
   private IQuery query;
+  private Transaction transaction;
+  private long createdTime;
+  private long updatedTime;
 
   public DAOSupportSession() {
+    this.createdTime = System.currentTimeMillis();
+    this.updatedTime = createdTime;
   }
 
   public void setConnection(Connection conn) {
@@ -33,11 +39,11 @@ public class DAOSupportSession {
     query.setConfiguration(config);
   }
 
-  public void setId(int id) {
+  public void setId(Long id) {
     this.id = id;
   }
 
-  public int getId() {
+  public long getId() {
     return id;
   }
 
@@ -45,26 +51,9 @@ public class DAOSupportSession {
     return dialect;
   }
 
-  public void beginTransaction() throws Exception {
-    if (assertConnectionNotNull()) {
-      conn.setAutoCommit(false);
-    }
-  }
-
-  public void endTransaction() throws Exception {
-    if (assertConnectionNotNull()) {
-      conn.commit();
-    }
-  }
-
-  public void rollbackTransaction() throws Exception {
-    if (assertConnectionNotNull()) {
-      conn.rollback();
-    }
-  }
-
   /**
    * Test the connection.
+   * 
    * @return the connection is fine?
    */
   public boolean testConnection() {
@@ -75,27 +64,33 @@ public class DAOSupportSession {
     }
   }
 
-  private boolean assertConnectionNotNull() {
-    if (null == conn) {
+  private void assertConnectionNotNull() {
+    if (null == conn)
       throw new NullPointerException("Connection can not be null.");
-    } else {
-      return true;
-    }
   }
 
   public Connection getConnection() {
+    assertConnectionNotNull();
     return conn;
   }
-
-  public void clearup() {
+  
+  public void close() throws SQLException {
+    clearup();
     if (null != conn) {
       try {
         conn.close();
       } catch (SQLException e) {
-        logger.error("The DB Connection cannot be closed. Cause: "
-            + e.getMessage());
-        throw new RuntimeException(e);
+        logger.error("The DB Connection cannot be closed. Cause: " + e.getMessage());
+        throw e;
       }
+    }
+  }
+  
+  public void clearup() throws SQLException {
+    // commit unfinished transaction.
+    if (null != transaction) {
+      transaction.close();
+      transaction = null;
     }
   }
 
@@ -107,7 +102,7 @@ public class DAOSupportSession {
     this.config = configuraton;
     this.query.setConfiguration(configuraton);
   }
-  
+
   /** {@inheritDoc} */
   @Override
   public String toString() {
@@ -138,5 +133,33 @@ public class DAOSupportSession {
 
   public void setQuery(IQuery query) {
     this.query = query;
+  }
+
+  public void setTransaction(Transaction transaction) {
+    this.transaction = transaction;
+  }
+
+  public boolean isInTransaction() {
+    boolean inTransaction = false;
+    if (null != this.transaction) {
+      inTransaction = true;
+    }
+    return inTransaction;
+  }
+
+  public Transaction getTransaction() {
+    return transaction;
+  }
+
+  public long getCreatedTime() {
+    return createdTime;
+  }
+
+  public long getUpdatedTime() {
+    return updatedTime;
+  }
+
+  public void update() {
+    this.updatedTime = System.currentTimeMillis();
   }
 }

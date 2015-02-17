@@ -27,6 +27,14 @@
         </includes>
       </resource>
       <resource>
+        <directory>src/test/resources</directory>
+        <includes>
+          <include>**/*.properties</include>
+          <include>**/*.sql</include>
+          <include>**/*.xml</include>
+        </includes>
+      </resource>
+      <resource>
         <directory>.</directory>
         <includes>
           <include>**/*.properties</include>
@@ -69,6 +77,11 @@
   		<groupId>org.apache.commons</groupId>
   		<artifactId>commons-dbcp2</artifactId>
   		<version>2.0.1</version>
+  	</dependency>
+  	<dependency>
+  	  <groupId>org.testng</groupId>
+  	  <artifactId>testng</artifactId>
+  	  <scope>test</scope>
   	</dependency>
   </dependencies>
 </project>

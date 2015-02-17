@@ -19,8 +19,7 @@ public class SchemaTest {
     ds.setUser("root");
     ds.setPassword("root");
     Connection conn = ds.getConnection();
-    SchemaReader schemaReader = new SchemaReader();
-    ITable table = schemaReader.getTableMetaData(conn, "t_game_info");
+    ITable table = SchemaReader.getTableMetaData(conn, "t_game_info");
     System.out.println(table);
   }
 }

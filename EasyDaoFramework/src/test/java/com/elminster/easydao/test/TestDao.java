@@ -26,15 +26,15 @@ public interface TestDao {
   @Sql("select pass from testtable where name = $bean.name")
   public String getPasswordByBean(@SqlParam("bean") ORMBean bean);
 
-  @SqlFile("getAccountByUserName.sql")
+  @SqlFile("sql/testDao/getAccountByUserName.sql")
   public Double getAccountByUserName(@SqlParam("user") String user);
 
-  @SqlFile("getAccountByBean.sql")
+  @SqlFile("sql/testDao/getAccountByBean.sql")
   public Double getAccountByBean(@SqlParam("bean") ORMBean bean);
 
-  @SqlFile("getAccountByCondition.sql")
+  @SqlFile("sql/testDao/getAccountByCondition.sql")
   public Double getAccountByCondition(@SqlParam("condition") int codition);
   
-  @SqlFile("getAccountByBeanCondition.sql")
+  @SqlFile("sql/testDao/getAccountByBeanCondition.sql")
   public Double getAccountByBeanCondition(@SqlParam("bean") ORMBean bean);
 }

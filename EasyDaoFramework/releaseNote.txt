@@ -1,8 +1,14 @@
+----------------------1.140.0-----------------------
++ add source generate maven plugin
+----------------------1.120.0-----------------------
++ add thread level transaction support
++ bugfix
++ source tidy up
 ----------------------1.20.1-----------------------
 + add "+-*/" support and "and", "or" support in script
 ----------------------1.20.0-----------------------
 + add scriptable feature
 ----------------------1.10.0-----------------------
-+ add transaction Support
++ add ORM support
 ----------------------1.0.0------------------------
 first version

@@ -1,4 +1,4 @@
-package com.elminster.easydao.db.manager;
+package com.elminster.easydao.db.dao;
 
 import java.lang.reflect.Method;
 
@@ -34,7 +34,6 @@ public class DAOInvokeHandler extends InterfaceInvocationHandler {
 	@Override
 	protected Object override(Object proxy, Method method, Object[] args) throws Throwable {
 		ISqlAnalyzer sqlAnalyzer = sqlAnalyzerFactory.getSqlAnalyzer(method, args);
-		sqlAnalyzer.setOriginalClass(this.getOriginalClass());
 		SqlStatementInfo sqlStatementInfo = sqlAnalyzer.parser(method, args);
 		
 		ISqlExecutor sqlExecutor = sqlExecutorFactory.getSQLExecutor(sqlStatementInfo);

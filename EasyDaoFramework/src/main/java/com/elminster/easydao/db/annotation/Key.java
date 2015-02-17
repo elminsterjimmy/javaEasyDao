@@ -12,4 +12,5 @@ import com.elminster.common.constants.Constants.StringConstants;
 public @interface Key {
 	public KeyPolicy policy() default KeyPolicy.NORMAL_POLICY;
 	public String sequenceName() default StringConstants.EMPTY_STRING;
+	public String customIdGeneratorClass() default StringConstants.EMPTY_STRING;
 }

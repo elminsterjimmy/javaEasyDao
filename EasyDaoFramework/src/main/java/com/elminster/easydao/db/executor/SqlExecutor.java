@@ -25,15 +25,14 @@ import com.elminster.easydao.db.exception.SQLExecuteException;
 import com.elminster.easydao.db.exception.SqlAnalyzeException;
 import com.elminster.easydao.db.handler.IResultSetHandler;
 import com.elminster.easydao.db.handler.ORMResultSetHandlerFactory;
-import com.elminster.easydao.db.manager.DAOSupportSession;
-import com.elminster.easydao.db.manager.ThreadSessionMap;
+import com.elminster.easydao.db.session.DAOSupportSession;
+import com.elminster.easydao.db.session.ThreadSessionMap;
 
 public class SqlExecutor implements ISqlExecutor {
 
   private static final Log logger = LogFactory.getLog(SqlExecutor.class);
 
-  private Connection conn;
-  private ORMResultSetHandlerFactory resultSetHandlerFactory = ORMResultSetHandlerFactory.getInstance();
+  private static final ORMResultSetHandlerFactory resultSetHandlerFactory = ORMResultSetHandlerFactory.getInstance();
   private Class<?> originalClass;
 
   public SqlExecutor() {
@@ -41,13 +40,13 @@ public class SqlExecutor implements ISqlExecutor {
 
   public Object execute(SqlStatementInfo sqlStatementInfo, Method invokeMethod, Object[] args)
       throws SQLExecuteException {
-    this.conn = getConnection(invokeMethod, args);
+    Connection conn = getConnection(invokeMethod, args);
     Object rst = null;
     SqlType sqlType = sqlStatementInfo.getAnalyzedSqlType();
     if (SqlType.UPDATE == sqlType) {
-      rst = executeUpdate(sqlStatementInfo, invokeMethod);
+      rst = executeUpdate(conn, sqlStatementInfo, invokeMethod);
     } else if (SqlType.QUERY == sqlType) {
-      rst = executeQuery(sqlStatementInfo, invokeMethod);
+      rst = executeQuery(conn, sqlStatementInfo, invokeMethod);
     } else if (SqlType.STORED_PROCEDURE == sqlType) {
 
     }
@@ -74,13 +73,13 @@ public class SqlExecutor implements ISqlExecutor {
     return session;
   }
 
-  private Object executeQuery(SqlStatementInfo sqlStatementInfo, Method invokeMethod) {
+  private Object executeQuery(Connection conn, SqlStatementInfo sqlStatementInfo, Method invokeMethod) {
 
     PreparedStatement pstmt = null;
     ResultSet rs = null;
     IResultSetHandler resultSetHandler = null;
     try {
-      pstmt = createPreparedStatement(sqlStatementInfo);
+      pstmt = createPreparedStatement(conn, sqlStatementInfo);
       rs = getResultSet(pstmt, sqlStatementInfo);
 
       resultSetHandler = resultSetHandlerFactory.getResultSetHandler(invokeMethod, originalClass);
@@ -93,10 +92,10 @@ public class SqlExecutor implements ISqlExecutor {
     }
   }
 
-  private Object executeUpdate(SqlStatementInfo sqlStatementInfo, Method invokeMethod) {
+  private Object executeUpdate(Connection conn, SqlStatementInfo sqlStatementInfo, Method invokeMethod) {
     PreparedStatement pstmt = null;
     try {
-      pstmt = createPreparedStatement(sqlStatementInfo);
+      pstmt = createPreparedStatement(conn, sqlStatementInfo);
       int updateCount = pstmt.executeUpdate();
 
       Class<?> returnClazz = invokeMethod.getReturnType();
@@ -115,7 +114,7 @@ public class SqlExecutor implements ISqlExecutor {
     }
   }
 
-  private PreparedStatement createPreparedStatement(SqlStatementInfo sqlStatementInfo) throws SQLException {
+  private PreparedStatement createPreparedStatement(Connection conn, SqlStatementInfo sqlStatementInfo) throws SQLException {
     String sql = sqlStatementInfo.getAnalyzedSqlStatement();
     List<Object> params = sqlStatementInfo.getAnalyzedSqlParameters();
 

@@ -1,6 +1,8 @@
 package com.elminster.easydao.db.analyze;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.elminster.common.util.ReflectUtil;
 import com.elminster.easydao.db.analyze.data.SqlStatementInfo.SqlType;
@@ -15,12 +17,12 @@ public class ORMFetchAnalyzer extends ORMSqlAnalyzer {
   }
 
   @Override
-  public SqlType getSqlType() {
+  public SqlType getSqlType(String s) {
     return SqlType.QUERY;
   }
 
   @Override
-  protected void mapping(Object obj) {
+  protected AnalyzedSqlData mapping(Object obj) {
     StringBuilder builder = new StringBuilder();
     StringBuilder whereClause = new StringBuilder();
 
@@ -28,6 +30,7 @@ public class ORMFetchAnalyzer extends ORMSqlAnalyzer {
     Field[] fields = ReflectUtil.getAllField(obj.getClass());
     boolean firstValue = true;
     boolean firstKey = true;
+    List<Object> analyzedSqlParameters = new ArrayList<Object>();
     for (int i = 0; i < fields.length; i++) {
       Field field = fields[i];
       if (AnnotationUtil.isColumn(field)) {
@@ -79,6 +82,10 @@ public class ORMFetchAnalyzer extends ORMSqlAnalyzer {
     builder.append(" FROM ");
     builder.append(getTableName(obj));
     builder.append(whereClause.toString());
-    analyzedSql = builder.toString();
+    String analyzedSql = builder.toString();
+    AnalyzedSqlData data = new AnalyzedSqlData();
+    data.setAnalyzedSql(analyzedSql);
+    data.setAnalyzedSqlParameters(analyzedSqlParameters);
+    return data;
   }
 }
