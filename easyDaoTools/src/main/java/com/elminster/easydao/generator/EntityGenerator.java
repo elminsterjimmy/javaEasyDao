@@ -15,6 +15,7 @@ import com.elminster.common.util.FileUtil;
 import com.elminster.common.util.ObjectUtil;
 import com.elminster.common.util.StringUtil;
 import com.elminster.easydao.data.ClassData;
+import com.elminster.easydao.db.converter.ITableNameConverter;
 import com.elminster.easydao.db.schema.IColumn;
 import com.elminster.easydao.db.schema.ITable;
 import com.elminster.easydao.db.util.JavaSqlTypeMap;
@@ -41,6 +42,7 @@ public class EntityGenerator {
 
   private static final Log logger = LogFactory.getLog(EntityGenerator.class);
 
+  private ITableNameConverter tableNameConverter;
 
   /** the variable list. */
   private List<Variable> variables = new ArrayList<Variable>();
@@ -72,7 +74,11 @@ public class EntityGenerator {
   public ClassData generatEntity(ITable table, String packageName) throws UnknownTypeException {
     String tableName = table.getName();
     List<IColumn> columns = table.getColumns();
-    String className = Utils.normalizeName(tableName);
+    String className = tableName;
+    if (null != tableNameConverter) {
+      className = tableNameConverter.convertTableName(className);
+    }
+    className = Utils.normalizeName(className);
     className = className + ENTITY;
     importPackages.clear();
     String fields = generateFileds(table, columns);
@@ -149,6 +155,10 @@ public class EntityGenerator {
     } else {
       throw new UnknownTypeException("Unknown Type: " + type);
     }
+  }
+
+  public void setTableNamePatternConverter(ITableNameConverter tableNameConverter) {
+    this.tableNameConverter = tableNameConverter;
   }
 
   class Variable {

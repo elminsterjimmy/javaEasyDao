@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,12 +20,16 @@ import org.apache.maven.plugins.annotations.Execute;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.plugins.annotations.ResolutionScope;
 
 import com.elminster.common.constants.Constants.StringConstants;
 import com.elminster.common.constants.RegexConstants;
 import com.elminster.common.util.CollectionUtil;
 import com.elminster.common.util.FileUtil;
+import com.elminster.common.util.ReflectUtil;
+import com.elminster.common.util.StringUtil;
 import com.elminster.easydao.data.ClassData;
+import com.elminster.easydao.db.converter.ITableNameConverter;
 import com.elminster.easydao.db.ds.DataSourceFactory;
 import com.elminster.easydao.db.schema.CollectSchemaException;
 import com.elminster.easydao.db.schema.ITable;
@@ -41,8 +46,8 @@ import com.elminster.easydao.generator.ServiceGenerator;
  * @author jgu
  * @version 1.0
  */
-@Mojo(name="easyDAOSourceGenerate")
-@Execute(goal="easyDAOSourceGenerate", phase=LifecyclePhase.GENERATE_SOURCES)
+@Mojo(name = "easyDAOSourceGenerate", requiresDependencyResolution=ResolutionScope.RUNTIME)
+@Execute(goal = "easyDAOSourceGenerate", phase = LifecyclePhase.GENERATE_SOURCES)
 public class SourceGeneratorMojo extends AbstractMojo {
 
   private static final DataSourceFactory dsFactory = DataSourceFactory.INSTANCE;
@@ -62,8 +67,12 @@ public class SourceGeneratorMojo extends AbstractMojo {
   @Parameter
   private String dbPropertyPath;
 
+  @Parameter
+  private String tableNamePatternConverterClassName;
+
   @Override
   public void execute() throws MojoExecutionException, MojoFailureException {
+    checkParameters();
     DataSource ds = getDataSource();
     if (CollectionUtil.isNotEmpty(dbTableNames)) {
       String entityPackage = basePackage + ".entity";
@@ -74,6 +83,27 @@ public class SourceGeneratorMojo extends AbstractMojo {
       String exceptionPackage = basePackage + ".exception";
       List<ClassData> classDatas = new ArrayList<ClassData>();
       EntityGenerator entityGenerator = new EntityGenerator();
+      if (StringUtil.isNotEmpty(tableNamePatternConverterClassName)) {
+        try {
+          ITableNameConverter converter = (ITableNameConverter) ReflectUtil
+              .newInstanceViaReflect(tableNamePatternConverterClassName);
+          entityGenerator.setTableNamePatternConverter(converter);
+        } catch (NoSuchMethodException e) {
+          this.getLog().warn(e);
+        } catch (SecurityException e) {
+          this.getLog().warn(e);
+        } catch (InstantiationException e) {
+          this.getLog().warn(e);
+        } catch (IllegalAccessException e) {
+          this.getLog().warn(e);
+        } catch (IllegalArgumentException e) {
+          this.getLog().warn(e);
+        } catch (InvocationTargetException e) {
+          this.getLog().warn(e);
+        } catch (ClassNotFoundException e) {
+          this.getLog().warn(e);
+        }
+      }
       DAOGenerator daoGenerator = new DAOGenerator();
       ClassData baseDAOClassData = daoGenerator.geterateBaseDAO(daoPackage);
       classDatas.add(baseDAOClassData);
@@ -119,6 +149,19 @@ public class SourceGeneratorMojo extends AbstractMojo {
     }
   }
 
+  private void checkParameters() {
+    StringBuilder message = new StringBuilder();
+    if (StringUtil.isEmpty(srcDirectory)) {
+      message.append("parameter [srcDirectory] cannot be empty.");
+    }
+    if (StringUtil.isEmpty(dbPropertyPath)) {
+      message.append("parameter [dbPropertyPath] cannot be empty.");
+    }
+    if (message.length() > 0) {
+      throw new IllegalArgumentException(message.toString());
+    }
+  }
+
   private DataSource getDataSource() {
     DataSource ds = null;
     Properties properties = new Properties();
@@ -145,7 +188,8 @@ public class SourceGeneratorMojo extends AbstractMojo {
 
   private void writeClass(ClassData classData) throws IOException {
     String path = classData.getFullName();
-    path = FileUtil.fixFolderName(srcDirectory) + path.replaceAll(RegexConstants.REGEX_DOT, StringConstants.SLASH) + ".java";
+    path = FileUtil.fixFolderName(srcDirectory) + path.replaceAll(RegexConstants.REGEX_DOT, StringConstants.SLASH)
+        + ".java";
     FileUtil.createFolder(path);
     FileUtil.write2file(classData.getContent().getBytes(), path, overrideExist);
   }
